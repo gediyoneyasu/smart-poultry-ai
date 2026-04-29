@@ -699,3 +699,24 @@
   .poultry-section-title { font-size: 28px; }
   .poultry-category-item { height: 320px; }
 }
+
+/* Hide Swiper navigation arrows on homepage */
+.poultry-hero-slider .swiper-button-next,
+.poultry-hero-slider .swiper-button-prev {
+  display: none !important;
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* Keep pagination dots visible (optional) */
+.poultry-hero-slider .swiper-pagination {
+  display: block !important;
+}
+
+/* On mobile, ensure arrows are hidden */
+@media (max-width: 768px) {
+  .poultry-hero-slider .swiper-button-next,
+  .poultry-hero-slider .swiper-button-prev {
+    display: none !important;
+  }
+}
