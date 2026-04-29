@@ -1,0 +1,27 @@
+const mongoose = require('mongoose');
+
+const SensorDataSchema = new mongoose.Schema({
+  farmId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Farm',
+    required: true
+  },
+  houseId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'PoultryHouse'
+  },
+  temperature: Number,
+  humidity: Number,
+  feedIntake: Number,
+  waterConsumption: Number,
+  eggCount: Number,
+  mortalityCount: Number,
+  timestamp: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+SensorDataSchema.index({ farmId: 1, timestamp: -1 });
+
+module.exports = mongoose.model('SensorData', SensorDataSchema);
