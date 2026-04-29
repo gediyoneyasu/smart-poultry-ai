@@ -17,6 +17,9 @@
     }
   ],
   "env": {
-    "REACT_APP_API_URL": "https://smart-poultry-ai.onrender.com/api"
-  }
+    "REACT_APP_API_URL": "https://smart-poultry-ai-backend.onrender.com/api"
+  },
+  "buildCommand": "npm run build",
+  "installCommand": "npm install --legacy-peer-deps",
+  "framework": "create-react-app"
 }
