@@ -1,25 +1,9 @@
 {
-  "name": "smart-poultry-ai",
-  "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "build"
-      }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
-    }
-  ],
-  "env": {
-    "REACT_APP_API_URL": "https://smart-poultry-ai-backend.onrender.com/api"
-  },
-  "buildCommand": "npm run build",
+  "framework": "create-react-app",
+  "buildCommand": "CI=false npm run build",
   "installCommand": "npm install --legacy-peer-deps",
-  "framework": "create-react-app"
+  "outputDirectory": "build",
+  "env": {
+    "CI": "false"
+  }
 }
