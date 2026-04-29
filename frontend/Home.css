@@ -1,0 +1,55 @@
+
+/* Slider Controls */
+.poultry-slider-prev,
+.poultry-slider-next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.5);
+  color: white;
+  border: none;
+  padding: 15px 20px;
+  cursor: pointer;
+  font-size: 24px;
+  z-index: 10;
+  border-radius: 50%;
+  transition: all 0.3s;
+}
+
+.poultry-slider-prev {
+  left: 20px;
+}
+
+.poultry-slider-next {
+  right: 20px;
+}
+
+.poultry-slider-prev:hover,
+.poultry-slider-next:hover {
+  background: rgba(255, 193, 7, 0.8);
+}
+
+.poultry-slider-dots {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  z-index: 10;
+}
+
+.poultry-slider-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.5);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.poultry-slider-dot.active {
+  background: #ffc107;
+  width: 30px;
+  border-radius: 10px;
+}

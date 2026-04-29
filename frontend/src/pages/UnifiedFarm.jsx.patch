@@ -1,0 +1,91 @@
+        {/* Daily Record Form Modal */}
+        {showRecordForm && currentFarm && (
+          <div className="modal-overlay" onClick={() => setShowRecordForm(false)}>
+            <div className="modal-content large" onClick={(e) => e.stopPropagation()}>
+              <h2>📝 Add Daily Record - {currentFarm.name}</h2>
+              <form onSubmit={handleSaveRecord}>
+                <div className="form-grid">
+                  <div className="form-field">
+                    <label>📅 Date</label>
+                    <input type="date" value={recordForm.date} onChange={(e) => setRecordForm({...recordForm, date: e.target.value})} required />
+                  </div>
+                  
+                  <div className="form-field">
+                    <label>🐔 Total Birds</label>
+                    <input type="number" placeholder="e.g., 500" value={recordForm.totalBirds} onChange={(e) => setRecordForm({...recordForm, totalBirds: parseInt(e.target.value)})} />
+                  </div>
+                  
+                  <div className="form-field">
+                    <label>❤️ Healthy Birds</label>
+                    <input type="number" placeholder="Number of healthy birds" value={recordForm.healthyBirds} onChange={(e) => setRecordForm({...recordForm, healthyBirds: parseInt(e.target.value)})} />
+                  </div>
+                  
+                  <div className="form-field">
+                    <label>🤒 Sick Birds</label>
+                    <input type="number" placeholder="Number of sick birds" value={recordForm.sickBirds} onChange={(e) => setRecordForm({...recordForm, sickBirds: parseInt(e.target.value)})} />
+                  </div>
+                  
+                  <div className="form-field">
+                    <label>💀 Dead Birds</label>
+                    <input type="number" placeholder="Number of dead birds today" value={recordForm.deadBirds} onChange={(e) => setRecordForm({...recordForm, deadBirds: parseInt(e.target.value)})} />
+                  </div>
+                  
+                  <div className="form-field">
+                    <label>🥚 Eggs Collected</label>
+                    <input type="number" placeholder="Total eggs collected today" value={recordForm.eggsCollected} onChange={(e) => setRecordForm({...recordForm, eggsCollected: parseInt(e.target.value)})} />
+                  </div>
+                  
+                  <div className="form-field">
+                    <label>💰 Eggs Sold</label>
+                    <input type="number" placeholder="Number of eggs sold" value={recordForm.eggsSold} onChange={(e) => setRecordForm({...recordForm, eggsSold: parseInt(e.target.value)})} />
+                  </div>
+                  
+                  <div className="form-field">
+                    <label>💵 Egg Price (ETB)</label>
+                    <input type="number" step="0.5" placeholder="Price per egg (e.g., 5.00)" value={recordForm.eggPrice} onChange={(e) => setRecordForm({...recordForm, eggPrice: parseFloat(e.target.value)})} />
+                  </div>
+                  
+                  <div className="form-field">
+                    <label>🌾 Feed Consumed (kg)</label>
+                    <input type="number" placeholder="Total feed eaten today (kg)" value={recordForm.feedConsumed} onChange={(e) => setRecordForm({...recordForm, feedConsumed: parseInt(e.target.value)})} />
+                  </div>
+                  
+                  <div className="form-field">
+                    <label>💰 Feed Cost (ETB)</label>
+                    <input type="number" placeholder="Cost of feed today" value={recordForm.feedCost} onChange={(e) => setRecordForm({...recordForm, feedCost: parseInt(e.target.value)})} />
+                  </div>
+                  
+                  <div className="form-field">
+                    <label>💊 Medicine Cost (ETB)</label>
+                    <input type="number" placeholder="Medicine expenses today" value={recordForm.medicineCost} onChange={(e) => setRecordForm({...recordForm, medicineCost: parseInt(e.target.value)})} />
+                  </div>
+                  
+                  <div className="form-field">
+                    <label>📋 Other Expenses (ETB)</label>
+                    <input type="number" placeholder="Electricity, water, labor, etc." value={recordForm.otherExpenses} onChange={(e) => setRecordForm({...recordForm, otherExpenses: parseInt(e.target.value)})} />
+                  </div>
+                  
+                  <div className="form-field">
+                    <label>🌡️ Temperature (°C)</label>
+                    <input type="number" step="0.1" placeholder="House temperature (e.g., 32.5)" value={recordForm.temperature} onChange={(e) => setRecordForm({...recordForm, temperature: parseFloat(e.target.value)})} />
+                  </div>
+                  
+                  <div className="form-field">
+                    <label>💧 Humidity (%)</label>
+                    <input type="number" placeholder="Humidity percentage (e.g., 65)" value={recordForm.humidity} onChange={(e) => setRecordForm({...recordForm, humidity: parseInt(e.target.value)})} />
+                  </div>
+                </div>
+                
+                <div className="form-field full-width">
+                  <label>📝 Notes</label>
+                  <textarea rows="3" placeholder="Any observations, issues, or notes about your flock..." value={recordForm.notes} onChange={(e) => setRecordForm({...recordForm, notes: e.target.value})} />
+                </div>
+                
+                <div className="modal-buttons">
+                  <button type="submit" className="save-btn">💾 Save Record</button>
+                  <button type="button" className="cancel-btn" onClick={() => setShowRecordForm(false)}>❌ Cancel</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
