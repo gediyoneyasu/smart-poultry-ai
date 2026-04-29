@@ -1,0 +1,667 @@
+/* ============================================
+   POULTRY DISEASES WE DETECT SECTION
+   Premium Design - Inspired by Categories Page
+============================================ */
+
+.poultry-diseases-section {
+  padding: 100px 0;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.poultry-diseases-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 20% 50%, rgba(201, 166, 107, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.poultry-diseases-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 30px;
+}
+
+/* Header Styles */
+.poultry-diseases-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.poultry-diseases-title-badge {
+  display: inline-block;
+  background: linear-gradient(90deg, #c9a66b, #e8c88a);
+  color: #1a1a1a;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  padding: 8px 24px;
+  border-radius: 50px;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.poultry-diseases-heading {
+  font-size: clamp(2.5rem, 5vw, 3.8rem);
+  line-height: 1.2;
+  margin: 0 0 15px;
+  color: #1a1a1a;
+  font-weight: 700;
+  position: relative;
+}
+
+.poultry-diseases-heading::after {
+  content: '';
+  position: absolute;
+  bottom: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 3px;
+  background: linear-gradient(90deg, #c9a66b, #e8c88a);
+  border-radius: 2px;
+}
+
+.poultry-diseases-subtitle {
+  font-size: 18px;
+  color: #6b7280;
+  max-width: 700px;
+  margin: 25px auto 0;
+  line-height: 1.6;
+}
+
+/* Diseases Grid - Flip Cards */
+.poultry-diseases-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 30px;
+  perspective: 1000px;
+  margin-bottom: 50px;
+}
+
+/* Card Container */
+.poultry-disease-card {
+  height: 400px;
+  position: relative;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 20px;
+}
+
+.poultry-disease-card:hover {
+  transform: rotateY(180deg);
+}
+
+/* Front Card */
+.poultry-disease-card-front {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 20px;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 25px;
+  box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.15);
+}
+
+.poultry-disease-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.2) 100%);
+  border-radius: 20px;
+  z-index: 0;
+}
+
+.poultry-disease-badge {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 2;
+  background: rgba(201, 166, 107, 0.95);
+  color: #1a1a1a;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  backdrop-filter: blur(5px);
+  letter-spacing: 1px;
+}
+
+.poultry-disease-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80px;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.poultry-disease-icon i {
+  font-size: 38px;
+  color: #c9a66b;
+  transition: all 0.3s ease;
+}
+
+.poultry-disease-card-front:hover .poultry-disease-icon {
+  transform: translate(-50%, -50%) scale(1.1);
+  background: linear-gradient(135deg, #c9a66b, #e8c88a);
+}
+
+.poultry-disease-card-front:hover .poultry-disease-icon i {
+  color: white;
+}
+
+.poultry-disease-btn {
+  position: relative;
+  z-index: 2;
+  background: white;
+  color: #1a1a1a;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 50px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: fit-content;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.poultry-disease-btn:hover {
+  background: linear-gradient(90deg, #c9a66b, #e8c88a);
+  color: #1a1a1a;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(201, 166, 107, 0.4);
+}
+
+/* Back Card */
+.poultry-disease-card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 20px;
+  overflow: hidden;
+  transform: rotateY(180deg);
+  background: linear-gradient(135deg, #c9a66b, #e8c88a);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 30px;
+  box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.15);
+}
+
+/* Centered Overlay */
+.poultry-disease-card-back::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 85%;
+  height: 85%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.88));
+  backdrop-filter: blur(8px);
+  border-radius: 20px;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Border for the overlay */
+.poultry-disease-card-back::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 85%;
+  height: 85%;
+  border: 2px solid rgba(201, 166, 107, 0.3);
+  border-radius: 20px;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.poultry-disease-back-price {
+  position: relative;
+  z-index: 2;
+  background: linear-gradient(90deg, #c9a66b, #e8c88a);
+  color: #1a1a1a;
+  padding: 10px 22px;
+  border-radius: 50px;
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  width: fit-content;
+}
+
+.poultry-disease-back-content {
+  position: relative;
+  z-index: 2;
+  padding: 0 15px;
+  width: 100%;
+}
+
+.poultry-disease-back-content h3 {
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 12px;
+  color: #1a1a1a;
+}
+
+.poultry-disease-back-content p {
+  font-size: 14px;
+  color: #4b5563;
+  margin-bottom: 15px;
+  line-height: 1.5;
+}
+
+.poultry-disease-back-stats {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin: 10px 0;
+  flex-wrap: wrap;
+}
+
+.poultry-disease-back-stats span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 6px 14px;
+  border-radius: 30px;
+  backdrop-filter: blur(4px);
+}
+
+.poultry-disease-back-stats span i {
+  color: #c9a66b;
+}
+
+.poultry-disease-explore {
+  position: relative;
+  z-index: 2;
+  margin-top: 20px;
+  background: linear-gradient(90deg, #c9a66b, #e8c88a);
+  color: #1a1a1a;
+  padding: 10px 28px;
+  border-radius: 50px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.poultry-disease-explore:hover {
+  gap: 15px;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(201, 166, 107, 0.4);
+}
+
+.poultry-disease-explore i {
+  transition: transform 0.3s ease;
+}
+
+.poultry-disease-explore:hover i {
+  transform: translateX(4px);
+}
+
+/* Footer View All Button */
+.poultry-diseases-footer {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.poultry-diseases-view-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 35px;
+  background: linear-gradient(90deg, #c9a66b, #e8c88a);
+  color: #1a1a1a;
+  text-decoration: none;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(201, 166, 107, 0.3);
+}
+
+.poultry-diseases-view-all:hover {
+  gap: 15px;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(201, 166, 107, 0.4);
+}
+
+/* ==================== MEDIA QUERIES ==================== */
+
+/* Desktop Large (1200px+) */
+@media (min-width: 1200px) {
+  .poultry-diseases-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+  }
+  
+  .poultry-disease-card {
+    height: 400px;
+  }
+}
+
+/* Desktop Medium (992px - 1199px) */
+@media (min-width: 992px) and (max-width: 1199px) {
+  .poultry-diseases-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+  }
+  
+  .poultry-disease-card {
+    height: 380px;
+  }
+  
+  .poultry-disease-icon {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .poultry-disease-icon i {
+    font-size: 32px;
+  }
+}
+
+/* Tablet Portrait (768px - 991px) */
+@media (min-width: 768px) and (max-width: 991px) {
+  .poultry-diseases-section {
+    padding: 70px 0;
+  }
+  
+  .poultry-diseases-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 25px;
+  }
+  
+  .poultry-disease-card {
+    height: 360px;
+  }
+  
+  .poultry-diseases-heading {
+    font-size: 36px;
+  }
+  
+  .poultry-disease-icon {
+    width: 65px;
+    height: 65px;
+  }
+  
+  .poultry-disease-icon i {
+    font-size: 30px;
+  }
+  
+  .poultry-disease-back-content h3 {
+    font-size: 18px;
+  }
+  
+  .poultry-disease-back-content p {
+    font-size: 13px;
+  }
+}
+
+/* Mobile Large (576px - 767px) */
+@media (min-width: 576px) and (max-width: 767px) {
+  .poultry-diseases-section {
+    padding: 60px 0;
+  }
+  
+  .poultry-diseases-grid {
+    grid-template-columns: 1fr;
+    gap: 30px;
+    max-width: 400px;
+    margin: 0 auto 40px;
+  }
+  
+  .poultry-disease-card {
+    height: 380px;
+  }
+  
+  .poultry-diseases-heading {
+    font-size: 32px;
+  }
+  
+  .poultry-diseases-subtitle {
+    font-size: 15px;
+    padding: 0 20px;
+  }
+  
+  .poultry-disease-icon {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .poultry-disease-icon i {
+    font-size: 32px;
+  }
+}
+
+/* Mobile Small (375px - 575px) */
+@media (min-width: 375px) and (max-width: 575px) {
+  .poultry-diseases-section {
+    padding: 50px 0;
+  }
+  
+  .poultry-diseases-container {
+    padding: 0 20px;
+  }
+  
+  .poultry-diseases-grid {
+    grid-template-columns: 1fr;
+    gap: 25px;
+    max-width: 350px;
+    margin: 0 auto 35px;
+  }
+  
+  .poultry-disease-card {
+    height: 400px;
+  }
+  
+  .poultry-diseases-heading {
+    font-size: 28px;
+  }
+  
+  .poultry-diseases-title-badge {
+    font-size: 12px;
+    padding: 6px 18px;
+  }
+  
+  .poultry-diseases-subtitle {
+    font-size: 14px;
+  }
+  
+  .poultry-disease-icon {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .poultry-disease-icon i {
+    font-size: 28px;
+  }
+  
+  .poultry-disease-btn {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+  
+  .poultry-disease-back-content h3 {
+    font-size: 18px;
+  }
+  
+  .poultry-disease-back-content p {
+    font-size: 12px;
+  }
+  
+  .poultry-disease-back-stats {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+/* Mobile Extra Small (up to 374px) */
+@media (max-width: 374px) {
+  .poultry-diseases-section {
+    padding: 40px 0;
+  }
+  
+  .poultry-diseases-container {
+    padding: 0 15px;
+  }
+  
+  .poultry-diseases-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    max-width: 300px;
+    margin: 0 auto 30px;
+  }
+  
+  .poultry-disease-card {
+    height: 420px;
+  }
+  
+  .poultry-diseases-heading {
+    font-size: 24px;
+  }
+  
+  .poultry-diseases-title-badge {
+    font-size: 10px;
+    padding: 5px 14px;
+  }
+  
+  .poultry-diseases-subtitle {
+    font-size: 12px;
+  }
+  
+  .poultry-disease-icon {
+    width: 55px;
+    height: 55px;
+  }
+  
+  .poultry-disease-icon i {
+    font-size: 24px;
+  }
+  
+  .poultry-disease-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+  
+  .poultry-disease-back-price {
+    font-size: 16px;
+    padding: 6px 16px;
+  }
+  
+  .poultry-disease-back-content h3 {
+    font-size: 16px;
+  }
+  
+  .poultry-disease-back-content p {
+    font-size: 11px;
+  }
+  
+  .poultry-disease-back-stats span {
+    font-size: 10px;
+    padding: 4px 10px;
+  }
+  
+  .poultry-disease-explore {
+    padding: 8px 20px;
+    font-size: 12px;
+  }
+}
+
+/* Landscape Orientation Fix for Mobile */
+@media (max-width: 767px) and (orientation: landscape) {
+  .poultry-disease-card {
+    height: 320px;
+  }
+  
+  .poultry-diseases-grid {
+    max-width: 600px;
+  }
+  
+  .poultry-disease-icon {
+    width: 55px;
+    height: 55px;
+  }
+  
+  .poultry-disease-icon i {
+    font-size: 24px;
+  }
+  
+  .poultry-disease-back-stats {
+    flex-direction: row;
+  }
+}
+
+/* Touch Device Optimization */
+@media (hover: none) {
+  .poultry-disease-card:hover {
+    transform: none;
+  }
+  
+  .poultry-disease-card-front:hover .poultry-disease-icon {
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* Animation for Cards on Load */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.poultry-disease-card {
+  animation: fadeInUp 0.6s ease forwards;
+  opacity: 0;
+}
+
+.poultry-disease-card:nth-child(1) { animation-delay: 0.1s; }
+.poultry-disease-card:nth-child(2) { animation-delay: 0.2s; }
+.poultry-disease-card:nth-child(3) { animation-delay: 0.3s; }
+.poultry-disease-card:nth-child(4) { animation-delay: 0.4s; }
