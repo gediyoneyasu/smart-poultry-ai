@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
+import API_URL from '../config/api';
 import './Admin.css';
 
 const Admin = () => {
@@ -10,18 +11,18 @@ const Admin = () => {
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalFarms: 0,
-    totalReports: 0,
-    unreadMessages: 0,
-    totalHouses: 0
+    totalRecords: 0,
+    totalCompanies: 0,
+    totalFarmers: 0,
+    totalEmployees: 0
   });
   const [users, setUsers] = useState([]);
-  const [farms, setFarms] = useState([]);
-  const [reports, setReports] = useState([]);
+  const [allFarms, setAllFarms] = useState([]);
+  const [allRecords, setAllRecords] = useState([]);
   const [contacts, setContacts] = useState([]);
+  const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-
-  const API_URL = 'http://localhost:5001/api';
 
   const getToken = () => localStorage.getItem('poultryToken');
   const getUser = () => {
@@ -30,85 +31,43 @@ const Admin = () => {
   };
 
   useEffect(() => {
-    const savedLang = localStorage.getItem('language');
-    if (savedLang) setLanguage(savedLang);
-    checkAuth();
-  }, []);
-
-  const checkAuth = () => {
     const token = getToken();
     const user = getUser();
+    const savedLang = localStorage.getItem('language');
+    if (savedLang) setLanguage(savedLang);
     
-    console.log('Checking auth - Token:', token ? 'Present' : 'Missing');
-    console.log('Checking auth - User:', user);
-    
-    if (!token || !user) {
-      toast.error('Please login first');
+    if (!token || !user || user.role !== 'admin') {
+      toast.error('Admin access required');
       navigate('/auth');
       return;
     }
     
-    if (user.role !== 'admin') {
-      toast.error('Admin access required');
-      navigate('/dashboard');
-      return;
-    }
-    
-    // If authenticated, fetch data
-    fetchDashboardData();
-  };
+    fetchAllData();
+  }, []);
 
-  const fetchDashboardData = async () => {
+  const fetchAllData = async () => {
     setLoading(true);
     const token = getToken();
     
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-    
     try {
-      // Fetch stats
-      const statsRes = await axios.get(`${API_URL}/admin/stats`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const [statsRes, usersRes, farmsRes, recordsRes, contactsRes, companiesRes] = await Promise.all([
+        axios.get(`${API_URL}/admin/stats`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_URL}/admin/users`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_URL}/admin/all-farms`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_URL}/admin/all-records`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_URL}/admin/contacts`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_URL}/admin/companies`, { headers: { Authorization: `Bearer ${token}` } })
+      ]);
+      
       setStats(statsRes.data);
-      
-      // Fetch users
-      const usersRes = await axios.get(`${API_URL}/admin/users`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
       setUsers(usersRes.data);
-      
-      // Fetch farms
-      const farmsRes = await axios.get(`${API_URL}/admin/farms`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setFarms(farmsRes.data);
-      
-      // Fetch reports
-      const reportsRes = await axios.get(`${API_URL}/admin/reports`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setReports(reportsRes.data);
-      
-      // Fetch contacts
-      const contactsRes = await axios.get(`${API_URL}/admin/contacts`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      setAllFarms(farmsRes.data);
+      setAllRecords(recordsRes.data);
       setContacts(contactsRes.data);
-      
-      toast.success('Admin data loaded');
+      setCompanies(companiesRes.data);
     } catch (error) {
-      console.error('Error fetching admin data:', error);
-      if (error.response?.status === 401) {
-        localStorage.removeItem('poultryToken');
-        localStorage.removeItem('poultryUser');
-        toast.error('Session expired. Please login again.');
-        navigate('/auth');
-      } else {
-        toast.error('Failed to load admin data: ' + (error.response?.data?.message || error.message));
-      }
+      console.error('Error fetching data:', error);
+      toast.error('Failed to load admin data');
     } finally {
       setLoading(false);
     }
@@ -121,9 +80,9 @@ const Admin = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success('User role updated');
-      fetchDashboardData();
+      fetchAllData();
     } catch (error) {
-      toast.error('Failed to update role: ' + (error.response?.data?.message || error.message));
+      toast.error('Failed to update role');
     }
   };
 
@@ -135,9 +94,9 @@ const Admin = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success('User deleted');
-      fetchDashboardData();
+      fetchAllData();
     } catch (error) {
-      toast.error('Failed to delete user: ' + (error.response?.data?.message || error.message));
+      toast.error('Failed to delete user');
     }
   };
 
@@ -148,7 +107,7 @@ const Admin = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success('Contact status updated');
-      fetchDashboardData();
+      fetchAllData();
     } catch (error) {
       toast.error('Failed to update status');
     }
@@ -157,78 +116,73 @@ const Admin = () => {
   const translations = {
     en: {
       title: "Admin Dashboard",
-      subtitle: "Manage users, farms, and system data",
+      subtitle: "Manage users, farms, records, and system data",
       dashboard: "Dashboard",
       users: "Users",
-      farms: "Farms",
-      reports: "Reports",
+      farms: "All Farms",
+      records: "Daily Records",
+      companies: "Companies",
       messages: "Messages",
       totalUsers: "Total Users",
       totalFarms: "Total Farms",
-      totalReports: "AI Reports",
-      unreadMessages: "Unread Messages",
-      totalHouses: "Poultry Houses",
+      totalRecords: "Total Records",
+      totalCompanies: "Companies",
+      farmers: "Farmers",
+      employees: "Employees",
       name: "Name",
       email: "Email",
       role: "Role",
       farmName: "Farm Name",
+      owner: "Owner",
       actions: "Actions",
       status: "Status",
       date: "Date",
-      disease: "Disease",
-      confidence: "Confidence",
+      eggs: "Eggs",
+      profit: "Profit",
       view: "View",
       delete: "Delete",
       makeAdmin: "Make Admin",
-      makeVet: "Make Vet",
       makeFarmer: "Make Farmer",
-      markRead: "Mark as Read",
-      markReplied: "Mark as Replied",
-      refresh: "Refresh Data"
+      makeCompanyAdmin: "Make Company Admin",
+      makeManager: "Make Manager",
+      markRead: "Mark as Read"
     },
     am: {
       title: "የአስተዳዳሪ ዳሽቦርድ",
-      subtitle: "ተጠቃሚዎችን፣ እርሻዎችን እና የስርዓት መረጃዎችን ያስተዳድሩ",
+      subtitle: "ተጠቃሚዎችን፣ እርሻዎችን፣ መዝገቦችን እና የስርዓት መረጃዎችን ያስተዳድሩ",
       dashboard: "ዳሽቦርድ",
       users: "ተጠቃሚዎች",
-      farms: "እርሻዎች",
-      reports: "ሪፖርቶች",
+      farms: "ሁሉም እርሻዎች",
+      records: "ዕለታዊ መዝገቦች",
+      companies: "ኩባንያዎች",
       messages: "መልዕክቶች",
       totalUsers: "ጠቅላላ ተጠቃሚዎች",
       totalFarms: "ጠቅላላ እርሻዎች",
-      totalReports: "ኤአይ ሪፖርቶች",
-      unreadMessages: "ያልተነበቡ መልዕክቶች",
-      totalHouses: "የዶሮ ቤቶች",
+      totalRecords: "ጠቅላላ መዝገቦች",
+      totalCompanies: "ኩባንያዎች",
+      farmers: "አርሶ አደሮች",
+      employees: "ሰራተኞች",
       name: "ስም",
       email: "ኢሜይል",
       role: "ሚና",
       farmName: "የእርሻ ስም",
+      owner: "ባለቤት",
       actions: "ድርጊቶች",
       status: "ሁኔታ",
       date: "ቀን",
-      disease: "በሽታ",
-      confidence: "እምነት",
+      eggs: "እንቁላሎች",
+      profit: "ትርፍ",
       view: "ተመልከት",
       delete: "ሰርዝ",
       makeAdmin: "አስተዳዳሪ አድርግ",
-      makeVet: "የእንስሳት ሐኪም አድርግ",
       makeFarmer: "አርሶ አደር አድርግ",
-      markRead: "እንደተነበበ ምልክት አድርግ",
-      markReplied: "መልስ እንደተሰጠው ምልክት አድርግ",
-      refresh: "መረጃ አድስ"
+      makeCompanyAdmin: "የኩባንያ አስተዳዳሪ አድርግ",
+      makeManager: "አስተዳዳሪ አድርግ",
+      markRead: "እንደተነበበ ምልክት አድርግ"
     }
   };
 
   const t = translations[language];
-
-  const getStatusColor = (status) => {
-    switch(status) {
-      case 'unread': return '#ef4444';
-      case 'read': return '#f59e0b';
-      case 'replied': return '#10b981';
-      default: return '#6b7280';
-    }
-  };
 
   if (loading) {
     return (
@@ -245,8 +199,8 @@ const Admin = () => {
         <div className="admin-header">
           <h1>{t.title}</h1>
           <p>{t.subtitle}</p>
-          <button className="refresh-btn" onClick={fetchDashboardData}>
-            <i className="fas fa-sync-alt"></i> {t.refresh}
+          <button className="refresh-btn" onClick={fetchAllData}>
+            <i className="fas fa-sync-alt"></i> Refresh
           </button>
         </div>
 
@@ -254,9 +208,10 @@ const Admin = () => {
         <div className="admin-stats-grid">
           <div className="stat-card"><div className="stat-icon">👥</div><div className="stat-info"><h3>{t.totalUsers}</h3><p className="stat-value">{stats.totalUsers}</p></div></div>
           <div className="stat-card"><div className="stat-icon">🏠</div><div className="stat-info"><h3>{t.totalFarms}</h3><p className="stat-value">{stats.totalFarms}</p></div></div>
-          <div className="stat-card"><div className="stat-icon">📊</div><div className="stat-info"><h3>{t.totalReports}</h3><p className="stat-value">{stats.totalReports}</p></div></div>
-          <div className="stat-card"><div className="stat-icon">✉️</div><div className="stat-info"><h3>{t.unreadMessages}</h3><p className="stat-value">{stats.unreadMessages}</p></div></div>
-          <div className="stat-card"><div className="stat-icon">🏚️</div><div className="stat-info"><h3>{t.totalHouses}</h3><p className="stat-value">{stats.totalHouses}</p></div></div>
+          <div className="stat-card"><div className="stat-icon">📊</div><div className="stat-info"><h3>{t.totalRecords}</h3><p className="stat-value">{stats.totalRecords}</p></div></div>
+          <div className="stat-card"><div className="stat-icon">🏢</div><div className="stat-info"><h3>{t.totalCompanies}</h3><p className="stat-value">{stats.totalCompanies}</p></div></div>
+          <div className="stat-card"><div className="stat-icon">👨‍🌾</div><div className="stat-info"><h3>{t.farmers}</h3><p className="stat-value">{stats.totalFarmers || 0}</p></div></div>
+          <div className="stat-card"><div className="stat-icon">👔</div><div className="stat-info"><h3>{t.employees}</h3><p className="stat-value">{stats.totalEmployees || 0}</p></div></div>
         </div>
 
         {/* Admin Tabs */}
@@ -264,7 +219,8 @@ const Admin = () => {
           <button className={`admin-tab ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}><i className="fas fa-chart-line"></i> {t.dashboard}</button>
           <button className={`admin-tab ${activeTab === 'users' ? 'active' : ''}`} onClick={() => setActiveTab('users')}><i className="fas fa-users"></i> {t.users}</button>
           <button className={`admin-tab ${activeTab === 'farms' ? 'active' : ''}`} onClick={() => setActiveTab('farms')}><i className="fas fa-tractor"></i> {t.farms}</button>
-          <button className={`admin-tab ${activeTab === 'reports' ? 'active' : ''}`} onClick={() => setActiveTab('reports')}><i className="fas fa-file-alt"></i> {t.reports}</button>
+          <button className={`admin-tab ${activeTab === 'records' ? 'active' : ''}`} onClick={() => setActiveTab('records')}><i className="fas fa-file-alt"></i> {t.records}</button>
+          <button className={`admin-tab ${activeTab === 'companies' ? 'active' : ''}`} onClick={() => setActiveTab('companies')}><i className="fas fa-building"></i> {t.companies}</button>
           <button className={`admin-tab ${activeTab === 'messages' ? 'active' : ''}`} onClick={() => setActiveTab('messages')}><i className="fas fa-envelope"></i> {t.messages}</button>
         </div>
 
@@ -272,7 +228,7 @@ const Admin = () => {
         {activeTab === 'dashboard' && (
           <div className="admin-dashboard-content">
             <h2>Welcome to Admin Dashboard</h2>
-            <p>System is running with {stats.totalUsers} users, {stats.totalFarms} farms, and {stats.totalReports} AI reports.</p>
+            <p>System is running with {stats.totalUsers} users, {stats.totalFarms} farms, and {stats.totalRecords} daily records across {stats.totalCompanies} companies.</p>
           </div>
         )}
 
@@ -280,18 +236,18 @@ const Admin = () => {
         {activeTab === 'users' && (
           <div className="admin-table-container">
             <table className="admin-table">
-              <thead><tr><th>{t.name}</th><th>{t.email}</th><th>{t.role}</th><th>{t.farmName}</th><th>{t.actions}</th></tr></thead>
+              <thead><tr><th>{t.name}</th><th>{t.email}</th><th>{t.role}</th><th>{t.actions}</th></tr></thead>
               <tbody>
                 {users.map(user => (
                   <tr key={user._id}>
                     <td>{user.name}</td>
                     <td>{user.email}</td>
                     <td><span className={`role-badge ${user.role}`}>{user.role}</span></td>
-                    <td>{user.farmName || '-'}</td>
                     <td className="actions-cell">
                       <select onChange={(e) => updateUserRole(user._id, e.target.value)} value={user.role}>
                         <option value="farmer">{t.makeFarmer}</option>
-                        <option value="vet">{t.makeVet}</option>
+                        <option value="company_admin">{t.makeCompanyAdmin}</option>
+                        <option value="farm_manager">{t.makeManager}</option>
                         <option value="admin">{t.makeAdmin}</option>
                       </select>
                       <button className="delete-btn" onClick={() => deleteUser(user._id)}><i className="fas fa-trash"></i></button>
@@ -303,41 +259,71 @@ const Admin = () => {
           </div>
         )}
 
-        {/* Farms Tab */}
+        {/* Farms Tab - All Farms from ALL Users */}
         {activeTab === 'farms' && (
           <div className="admin-table-container">
             <table className="admin-table">
-              <thead><tr><th>{t.farmName}</th><th>{t.name}</th><th>{t.email}</th><th>Location</th><th>Birds</th></tr></thead>
+              <thead><tr><th>{t.farmName}</th><th>{t.owner}</th><th>{t.email}</th><th>Location</th><th>Birds</th><th>Type</th></tr></thead>
               <tbody>
-                {farms.map(farm => (
+                {allFarms.map(farm => (
                   <tr key={farm._id}>
-                    <td>{farm.farmName}</td>
-                    <td>{farm.farmerId?.name || '-'}</td>
-                    <td>{farm.farmerId?.email || '-'}</td>
-                    <td>{farm.location?.region || '-'}</td>
+                    <td>{farm.name}</td>
+                    <td>{farm.ownerName || '-'}</td>
+                    <td>{farm.ownerEmail || '-'}</td>
+                    <td>{farm.location || '-'}</td>
                     <td>{farm.totalBirds || 0}</td>
+                    <td>{farm.birdType}</td>
                   </tr>
                 ))}
+                {allFarms.length === 0 && <tr><td colSpan="6" style={{textAlign: 'center'}}>No farms found</td></tr>}
               </tbody>
             </table>
           </div>
         )}
 
-        {/* Reports Tab */}
-        {activeTab === 'reports' && (
+        {/* Records Tab - All Daily Records from ALL Users */}
+        {activeTab === 'records' && (
           <div className="admin-table-container">
             <table className="admin-table">
-              <thead><tr><th>{t.date}</th><th>Farm</th><th>{t.disease}</th><th>{t.confidence}</th><th>{t.status}</th></tr></thead>
+              <thead><tr><th>{t.date}</th><th>Farm</th><th>User</th><th>🥚 Eggs</th><th>❤️ Healthy</th><th>🤒 Sick</th><th>💀 Dead</th><th>💰 {t.profit}</th></tr></thead>
               <tbody>
-                {reports.map(report => (
-                  <tr key={report._id}>
-                    <td>{new Date(report.createdAt).toLocaleDateString()}</td>
-                    <td>{report.farmId?.farmName || '-'}</td>
-                    <td>{report.imageAnalysis?.disease || '-'}</td>
-                    <td>{report.imageAnalysis?.confidence || 0}%</td>
-                    <td><span className={`status-badge ${report.status}`}>{report.status}</span></td>
+                {allRecords.slice(0, 100).map(record => {
+                  const profit = (record.eggsSold || 0) * (record.eggPrice || 5) - ((record.feedCost || 0) + (record.medicineCost || 0) + (record.otherExpenses || 0));
+                  return (
+                    <tr key={record._id}>
+                      <td>{new Date(record.date).toLocaleDateString()}</td>
+                      <td>{record.farmName || '-'}</td>
+                      <td>{record.userName || '-'}</td>
+                      <td>{record.eggsCollected || 0}</td>
+                      <td>{record.healthyBirds || 0}</td>
+                      <td className="warning">{record.sickBirds || 0}</td>
+                      <td className="danger">{record.deadBirds || 0}</td>
+                      <td className={profit >= 0 ? 'profit' : 'loss'}>ETB {profit}</td>
+                    </tr>
+                  );
+                })}
+                {allRecords.length === 0 && <tr><td colSpan="8" style={{textAlign: 'center'}}>No records found</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Companies Tab */}
+        {activeTab === 'companies' && (
+          <div className="admin-table-container">
+            <table className="admin-table">
+              <thead><tr><th>Company Name</th><th>Owner</th><th>Farms</th><th>Managers</th><th>Status</th></tr></thead>
+              <tbody>
+                {companies.map(company => (
+                  <tr key={company._id}>
+                    <td>{company.name}</td>
+                    <td>{company.ownerId?.name || '-'}</td>
+                    <td>{company.farms?.length || 0}</td>
+                    <td>{company.managerIds?.length || 0}</td>
+                    <td><span className="status-badge active">Active</span></td>
                   </tr>
                 ))}
+                {companies.length === 0 && <tr><td colSpan="5" style={{textAlign: 'center'}}>No companies found</td></tr>}
               </tbody>
             </table>
           </div>
@@ -347,7 +333,7 @@ const Admin = () => {
         {activeTab === 'messages' && (
           <div className="admin-table-container">
             <table className="admin-table">
-              <thead><tr><th>{t.date}</th><th>{t.name}</th><th>{t.email}</th><th>Subject</th><th>{t.status}</th><th>{t.actions}</th></tr></thead>
+              <thead><tr><th>Date</th><th>Name</th><th>Email</th><th>Subject</th><th>Status</th><th>Actions</th></tr></thead>
               <tbody>
                 {contacts.map(contact => (
                   <tr key={contact._id}>
@@ -355,7 +341,7 @@ const Admin = () => {
                     <td>{contact.name}</td>
                     <td>{contact.email}</td>
                     <td>{contact.subject}</td>
-                    <td><span className={`status-badge ${contact.status}`} style={{backgroundColor: getStatusColor(contact.status)}}>{contact.status}</span></td>
+                    <td><span className={`status-badge ${contact.status}`}>{contact.status}</span></td>
                     <td>
                       <select onChange={(e) => updateContactStatus(contact._id, e.target.value)} value={contact.status}>
                         <option value="unread">Unread</option>

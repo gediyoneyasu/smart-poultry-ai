@@ -1,7 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
+import API_URL from '../config/api';
 
 const AuthContext = createContext();
 
@@ -13,22 +13,29 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  const API_URL = 'http://localhost:5001/api';
-
+  // Check for existing session on app load
   useEffect(() => {
-    // Check for existing token on app load
     const storedToken = localStorage.getItem('poultryToken');
     const storedUser = localStorage.getItem('poultryUser');
     
     if (storedToken && storedUser) {
       try {
         const userData = JSON.parse(storedUser);
-        setToken(storedToken);
-        setUser(userData);
-        setIsAuthenticated(true);
         
-        // Set default axios header
-        axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+        // Verify token is still valid (check expiration)
+        const tokenData = JSON.parse(atob(storedToken.split('.')[1]));
+        const isExpired = tokenData.exp * 1000 < Date.now();
+        
+        if (!isExpired) {
+          setToken(storedToken);
+          setUser(userData);
+          setIsAuthenticated(true);
+          axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+        } else {
+          // Token expired, clear storage
+          localStorage.removeItem('poultryToken');
+          localStorage.removeItem('poultryUser');
+        }
       } catch (error) {
         console.error('Error parsing user data:', error);
         localStorage.removeItem('poultryToken');
@@ -52,16 +59,18 @@ export const AuthProvider = ({ children }) => {
         setUser(user);
         setIsAuthenticated(true);
         
-        // Set default axios header
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         
         toast.success(`Welcome back, ${user.name}!`);
         return { success: true, user };
+      } else {
+        toast.error(response.data.message || 'Login failed');
+        return { success: false };
       }
     } catch (error) {
       console.error('Login error:', error);
       toast.error(error.response?.data?.message || 'Login failed');
-      return { success: false, error: error.response?.data?.message };
+      return { success: false, error: error.message };
     }
   };
 
@@ -83,11 +92,14 @@ export const AuthProvider = ({ children }) => {
         
         toast.success('Account created successfully!');
         return { success: true, user };
+      } else {
+        toast.error(response.data.message || 'Registration failed');
+        return { success: false };
       }
     } catch (error) {
       console.error('Register error:', error);
       toast.error(error.response?.data?.message || 'Registration failed');
-      return { success: false, error: error.response?.data?.message };
+      return { success: false, error: error.message };
     }
   };
 
