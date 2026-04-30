@@ -94,6 +94,7 @@ const UserSchema = new mongoose.Schema({
   profilePicture: { type: String, default: '' },
   bio: { type: String, default: '' },
   address: { type: String, default: '' },
+  farmName: { type: String, default: '' },
   
   // For individual farmers
   farms: [FarmSchema],
@@ -131,6 +132,25 @@ const UserSchema = new mongoose.Schema({
   lastLogin: Date
 });
 
+// ✅ ADDED: Virtual for notificationPreferences (for Profile component compatibility)
+UserSchema.virtual('notificationPreferences').get(function() {
+  return {
+    emailAlerts: this.preferences?.notifications?.emailAlerts ?? true,
+    smsAlerts: this.preferences?.notifications?.smsAlerts ?? false,
+    diseasePredictions: this.preferences?.notifications?.pushNotifications ?? true
+  };
+});
+
+// ✅ ADDED: toJSON transform to remove sensitive data
+UserSchema.set('toJSON', {
+  transform: (doc, ret) => {
+    delete ret.password;
+    delete ret.__v;
+    return ret;
+  },
+  virtuals: true  // Include virtuals like notificationPreferences
+});
+
 // Hash password before saving
 UserSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
@@ -148,5 +168,6 @@ UserSchema.methods.comparePassword = async function(candidatePassword) {
 UserSchema.index({ email: 1 });
 UserSchema.index({ role: 1 });
 UserSchema.index({ companyId: 1 });
+UserSchema.index({ isActive: 1 });
 
 module.exports = mongoose.model('User', UserSchema);

@@ -4,7 +4,9 @@ const User = require('../models/User');
 const { auth } = require('../middleware/auth');
 const mongoose = require('mongoose');
 
-// Get user's farms
+// ============ FARM CRUD ============
+
+// Get user's farms (original)
 router.get('/my-farms', auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
@@ -12,6 +14,24 @@ router.get('/my-farms', auth, async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
     res.json(user.farms || []);
+  } catch (error) {
+    console.error('Error getting farms:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// ✅ ADDED: Alias for /farms (matches frontend expectation)
+router.get('/farms', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json({ 
+      success: true, 
+      farms: user.farms || [], 
+      count: user.farms?.length || 0 
+    });
   } catch (error) {
     console.error('Error getting farms:', error);
     res.status(500).json({ message: error.message });
@@ -41,7 +61,7 @@ router.post('/farms', auth, async (req, res) => {
     await user.save();
     
     const savedFarm = user.farms[user.farms.length - 1];
-    res.status(201).json(savedFarm);
+    res.status(201).json({ success: true, farm: savedFarm });
   } catch (error) {
     console.error('Error creating farm:', error);
     res.status(500).json({ message: error.message });
@@ -70,7 +90,7 @@ router.put('/farms/:farmId', auth, async (req, res) => {
     };
     
     await user.save();
-    res.json(user.farms[farmIndex]);
+    res.json({ success: true, farm: user.farms[farmIndex] });
   } catch (error) {
     console.error('Error updating farm:', error);
     res.status(500).json({ message: error.message });
@@ -85,19 +105,24 @@ router.delete('/farms/:farmId', auth, async (req, res) => {
     // Also delete associated daily records
     user.dailyRecords = user.dailyRecords.filter(r => r.farmId?.toString() !== req.params.farmId);
     await user.save();
-    res.json({ message: 'Farm deleted successfully' });
+    res.json({ success: true, message: 'Farm deleted successfully' });
   } catch (error) {
     console.error('Error deleting farm:', error);
     res.status(500).json({ message: error.message });
   }
 });
 
+// ============ DAILY RECORDS ============
+
 // Get daily records for a farm
 router.get('/records/:farmId', auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     const records = user.dailyRecords.filter(r => r.farmId?.toString() === req.params.farmId);
-    res.json(records.sort((a, b) => new Date(b.date) - new Date(a.date)));
+    res.json({ 
+      success: true, 
+      records: records.sort((a, b) => new Date(b.date) - new Date(a.date)) 
+    });
   } catch (error) {
     console.error('Error getting records:', error);
     res.status(500).json({ message: error.message });
@@ -143,12 +168,14 @@ router.post('/records', auth, async (req, res) => {
     
     const savedRecord = user.dailyRecords[user.dailyRecords.length - 1];
     console.log('Record saved successfully:', savedRecord._id);
-    res.status(201).json(savedRecord);
+    res.status(201).json({ success: true, record: savedRecord });
   } catch (error) {
     console.error('Error saving record:', error);
     res.status(500).json({ message: error.message });
   }
 });
+
+// ============ AI SUGGESTIONS ============
 
 // Get AI suggestions based on farm data
 router.get('/suggestions/:farmId', auth, async (req, res) => {
@@ -248,12 +275,14 @@ router.get('/suggestions/:farmId', auth, async (req, res) => {
     }
     
     const summary = `📊 AI Analysis: Found ${suggestions.length} area(s) to improve.`;
-    res.json({ summary, suggestions });
+    res.json({ success: true, summary, suggestions });
   } catch (error) {
     console.error('Error generating suggestions:', error);
     res.status(500).json({ message: error.message });
   }
 });
+
+// ============ ADMIN ENDPOINTS ============
 
 // Get all farmers data for admin
 router.get('/admin/all-farmers', auth, async (req, res) => {
@@ -264,7 +293,7 @@ router.get('/admin/all-farmers', auth, async (req, res) => {
     }
     
     const farmers = await User.find({ role: 'farmer' }).select('-password');
-    res.json(farmers);
+    res.json({ success: true, farmers });
   } catch (error) {
     console.error('Error getting farmers:', error);
     res.status(500).json({ message: error.message });

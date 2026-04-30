@@ -17,9 +17,11 @@ const generateToken = (user) => {
 router.post('/register', async (req, res) => {
   try {
     const { name, email, password, phone, role, farmName } = req.body;
+    console.log('Registration attempt:', { name, email, role, farmName });
     
     const existingUser = await User.findOne({ email });
     if (existingUser) {
+      console.log('User already exists:', email);
       return res.status(400).json({ message: 'User already exists' });
     }
     
@@ -29,9 +31,13 @@ router.post('/register', async (req, res) => {
       password, 
       phone, 
       role: role || 'farmer',
+      farmName: farmName || '',
       farms: farmName ? [{ name: farmName, totalBirds: 0 }] : []
     });
+    
+    console.log('Saving user...');
     await user.save();
+    console.log('User saved successfully');
     
     const token = generateToken(user);
     res.status(201).json({

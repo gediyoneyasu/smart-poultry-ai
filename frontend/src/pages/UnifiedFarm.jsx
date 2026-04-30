@@ -1,9 +1,11 @@
-import API_URL from "../config/api";
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
 import './UnifiedFarm.css';
+
+const API_URL = 'http://localhost:5001/api';
+console.log('Farm page using API_URL:', API_URL);
 
 const UnifiedFarm = () => {
   const [language, setLanguage] = useState('en');
@@ -72,20 +74,34 @@ const UnifiedFarm = () => {
     loadUserData();
   }, [navigate]);
 
+  // ✅ FIXED: loadUserData handles both response formats
   const loadUserData = async () => {
     setLoading(true);
     const token = getToken();
     
     try {
-      const farmsRes = await axios.get(`${API_URL}/farm/my-farms`, {
+      const farmsRes = await axios.get(`${API_URL}/farm/farms`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setFarms(farmsRes.data || []);
       
-      if (farmsRes.data && farmsRes.data.length > 0) {
-        setCurrentFarm(farmsRes.data[0]);
-        setRecordForm({ ...recordForm, farmId: farmsRes.data[0]._id });
-        await loadRecords(farmsRes.data[0]._id);
+      // Handle both array and object responses
+      let farmsData = [];
+      if (Array.isArray(farmsRes.data)) {
+        farmsData = farmsRes.data;
+      } else if (farmsRes.data.farms && Array.isArray(farmsRes.data.farms)) {
+        farmsData = farmsRes.data.farms;
+      } else if (farmsRes.data.data && Array.isArray(farmsRes.data.data)) {
+        farmsData = farmsRes.data.data;
+      } else {
+        farmsData = [];
+      }
+      
+      setFarms(farmsData);
+      
+      if (farmsData.length > 0) {
+        setCurrentFarm(farmsData[0]);
+        setRecordForm({ ...recordForm, farmId: farmsData[0]._id });
+        await loadRecords(farmsData[0]._id);
       }
     } catch (error) {
       console.error('Error loading farms:', error);
@@ -101,7 +117,9 @@ const UnifiedFarm = () => {
       const recordsRes = await axios.get(`${API_URL}/farm/records/${farmId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setDailyRecords(recordsRes.data || []);
+      // Handle response format
+      const records = recordsRes.data.records || recordsRes.data || [];
+      setDailyRecords(records);
     } catch (error) {
       console.error('Error loading records:', error);
       setDailyRecords([]);
@@ -131,13 +149,15 @@ const UnifiedFarm = () => {
         const res = await axios.put(`${API_URL}/farm/farms/${editingFarm._id}`, farmForm, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        setFarms(farms.map(f => f._id === editingFarm._id ? res.data : f));
+        const updatedFarm = res.data.farm || res.data;
+        setFarms(farms.map(f => f._id === editingFarm._id ? updatedFarm : f));
         toast.success('Farm updated!');
       } else {
         const res = await axios.post(`${API_URL}/farm/farms`, farmForm, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        setFarms([...farms, res.data]);
+        const newFarm = res.data.farm || res.data;
+        setFarms([...farms, newFarm]);
         toast.success('Farm created!');
       }
       setShowFarmForm(false);
@@ -176,9 +196,11 @@ const UnifiedFarm = () => {
       const res = await axios.post(`${API_URL}/farm/records`, dataToSave, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setDailyRecords([res.data, ...dailyRecords]);
+      const newRecord = res.data.record || res.data;
+      setDailyRecords([newRecord, ...dailyRecords]);
       setShowRecordForm(false);
       setRecordForm({
+        farmId: currentFarm._id,
         date: new Date().toISOString().split('T')[0],
         totalBirds: '',
         healthyBirds: '',
@@ -453,7 +475,7 @@ const UnifiedFarm = () => {
             {aiSuggestions ? (
               <div className="ai-summary-card">
                 <div className="ai-summary"><i className="fas fa-robot"></i><p>{aiSuggestions.summary}</p></div>
-                {aiSuggestions.suggestions.map((s, idx) => (
+                {aiSuggestions.suggestions && aiSuggestions.suggestions.map((s, idx) => (
                   <div key={idx} className={`suggestion-card ${s.type}`}>
                     <div className="suggestion-header"><span className="suggestion-icon">{s.icon}</span><div className="suggestion-title"><h4>{s.title}</h4><span className={`priority-badge ${s.priority}`}>{s.priority.toUpperCase()}</span></div></div>
                     <p className="suggestion-message">{s.message}</p>

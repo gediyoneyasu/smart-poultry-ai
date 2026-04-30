@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import axios from 'axios';
-import API_URL from '../config/api';
+import { useAuth } from '../context/AuthContext';
 import './Auth.css';
 
 const Auth = () => {
@@ -19,16 +18,18 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login, register } = useAuth();
+
+  const { isAuthenticated, loading: authLoading } = useAuth();
 
   useEffect(() => {
     const savedLang = localStorage.getItem('language');
     if (savedLang) setLanguage(savedLang);
     
-    const token = localStorage.getItem('poultryToken');
-    if (token) {
+    if (isAuthenticated && !authLoading) {
       navigate('/dashboard');
     }
-  }, [navigate]);
+  }, [navigate, isAuthenticated, authLoading]);
 
   const translations = {
     en: {
@@ -108,20 +109,9 @@ const Auth = () => {
         return;
       }
       
-      try {
-        const response = await axios.post(`${API_URL}/auth/login`, {
-          email: formData.email,
-          password: formData.password
-        });
-        
-        if (response.data.success) {
-          localStorage.setItem('poultryToken', response.data.token);
-          localStorage.setItem('poultryUser', JSON.stringify(response.data.user));
-          toast.success('Login successful!');
-          navigate('/dashboard');
-        }
-      } catch (error) {
-        toast.error(error.response?.data?.message || 'Login failed');
+      const result = await login(formData.email, formData.password);
+      if (result.success) {
+        navigate('/dashboard');
       }
     } else {
       if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
@@ -136,24 +126,17 @@ const Auth = () => {
         return;
       }
       
-      try {
-        const response = await axios.post(`${API_URL}/auth/register`, {
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-          phone: '',
-          role: formData.role,
-          farmName: formData.farmName
-        });
-        
-        if (response.data.success) {
-          localStorage.setItem('poultryToken', response.data.token);
-          localStorage.setItem('poultryUser', JSON.stringify(response.data.user));
-          toast.success('Account created successfully!');
-          navigate('/dashboard');
-        }
-      } catch (error) {
-        toast.error(error.response?.data?.message || 'Registration failed');
+      const result = await register({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        phone: '',
+        role: formData.role,
+        farmName: formData.farmName
+      });
+      
+      if (result.success) {
+        navigate('/dashboard');
       }
     }
     setLoading(false);

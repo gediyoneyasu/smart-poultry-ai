@@ -1,4 +1,7 @@
-import API_URL from "../config/api";
+//import API_URL from "../config/api";
+// import API_URL from "../config/api";
+const API_URL = 'http://localhost:5001/api';
+console.log('Using API_URL:', API_URL);
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
@@ -16,7 +19,6 @@ const Profile = () => {
   
   const { user, updateUser, token } = useAuth();
   const navigate = useNavigate();
-  const API_URL = 'API_URL';
 
   const [profile, setProfile] = useState({
     name: '',
@@ -30,34 +32,79 @@ const Profile = () => {
   });
   
   const [editForm, setEditForm] = useState({});
+  const [stats, setStats] = useState({ farms: 0, dailyRecords: 0 });
   const [notifications, setNotifications] = useState({
     emailAlerts: true,
     smsAlerts: false,
     diseasePredictions: true
   });
 
+  // Load user stats
+  const loadUserStats = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/auth/stats`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setStats(response.data);
+    } catch (error) {
+      console.error('Stats error:', error);
+      // Don't show error toast for stats - it's non-critical
+    }
+  };
+
+  // Save notification settings
+  const saveNotificationSettings = async (newSettings) => {
+    try {
+      await axios.put(`${API_URL}/auth/notifications`, newSettings, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('Notification settings saved');
+    } catch (error) {
+      console.error('Save error:', error);
+      toast.error('Failed to save settings');
+    }
+  };
+
   useEffect(() => {
     const savedLang = localStorage.getItem('language');
     if (savedLang) setLanguage(savedLang);
     
-    if (!user) {
+    if (!user && !token) {
       navigate('/auth');
       return;
     }
     
-    loadUserProfile();
-  }, [user]);
+    if (token) {
+      loadUserProfile();
+      loadUserStats();
+    }
+  }, [user, token, navigate]);
 
   const loadUserProfile = async () => {
+    console.log('Loading profile with token:', token ? 'exists' : 'missing');
+    
     try {
       const response = await axios.get(`${API_URL}/auth/profile`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setProfile(response.data);
       setEditForm(response.data);
+      
+      // Load notification preferences if they exist
+      if (response.data.notificationPreferences) {
+        setNotifications(response.data.notificationPreferences);
+      }
     } catch (error) {
       console.error('Error loading profile:', error);
-      toast.error('Failed to load profile');
+      console.error('Status:', error.response?.status);
+      console.error('Message:', error.response?.data?.message);
+      
+      if (error.response?.status === 401) {
+        toast.error('Session expired. Please login again.');
+        navigate('/auth');
+      } else {
+        toast.error(error.response?.data?.message || 'Failed to load profile');
+      }
     }
   };
 
@@ -65,13 +112,11 @@ const Profile = () => {
     const file = e.target.files[0];
     if (!file) return;
     
-    // Check file type
     if (!file.type.startsWith('image/')) {
       toast.error('Please select an image file');
       return;
     }
     
-    // Check file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast.error('Image size should be less than 5MB');
       return;
@@ -249,11 +294,11 @@ const Profile = () => {
             
             <div className="sidebar-stats">
               <div className="stat-item">
-                <span className="stat-value">{profile.farms?.length || 0}</span>
+                <span className="stat-value">{stats.farms || 0}</span>
                 <span className="stat-label">{t.totalFarms}</span>
               </div>
               <div className="stat-item">
-                <span className="stat-value">{profile.dailyRecords?.length || 0}</span>
+                <span className="stat-value">{stats.dailyRecords || 0}</span>
                 <span className="stat-label">{t.totalRecords}</span>
               </div>
               <div className="stat-item">
@@ -318,15 +363,48 @@ const Profile = () => {
                 <div className="notifications-list-enhanced">
                   <div className="notification-item">
                     <div className="notification-info"><i className="fas fa-envelope"></i><span>{t.emailAlerts}</span></div>
-                    <label className="toggle-switch"><input type="checkbox" checked={notifications.emailAlerts} onChange={() => setNotifications({...notifications, emailAlerts: !notifications.emailAlerts})} /><span className="toggle-slider"></span></label>
+                    <label className="toggle-switch">
+                      <input 
+                        type="checkbox" 
+                        checked={notifications.emailAlerts} 
+                        onChange={() => {
+                          const newSettings = { ...notifications, emailAlerts: !notifications.emailAlerts };
+                          setNotifications(newSettings);
+                          saveNotificationSettings(newSettings);
+                        }} 
+                      />
+                      <span className="toggle-slider"></span>
+                    </label>
                   </div>
                   <div className="notification-item">
                     <div className="notification-info"><i className="fas fa-sms"></i><span>{t.smsAlerts}</span></div>
-                    <label className="toggle-switch"><input type="checkbox" checked={notifications.smsAlerts} onChange={() => setNotifications({...notifications, smsAlerts: !notifications.smsAlerts})} /><span className="toggle-slider"></span></label>
+                    <label className="toggle-switch">
+                      <input 
+                        type="checkbox" 
+                        checked={notifications.smsAlerts} 
+                        onChange={() => {
+                          const newSettings = { ...notifications, smsAlerts: !notifications.smsAlerts };
+                          setNotifications(newSettings);
+                          saveNotificationSettings(newSettings);
+                        }} 
+                      />
+                      <span className="toggle-slider"></span>
+                    </label>
                   </div>
                   <div className="notification-item">
                     <div className="notification-info"><i className="fas fa-chart-line"></i><span>{t.diseasePredictions}</span></div>
-                    <label className="toggle-switch"><input type="checkbox" checked={notifications.diseasePredictions} onChange={() => setNotifications({...notifications, diseasePredictions: !notifications.diseasePredictions})} /><span className="toggle-slider"></span></label>
+                    <label className="toggle-switch">
+                      <input 
+                        type="checkbox" 
+                        checked={notifications.diseasePredictions} 
+                        onChange={() => {
+                          const newSettings = { ...notifications, diseasePredictions: !notifications.diseasePredictions };
+                          setNotifications(newSettings);
+                          saveNotificationSettings(newSettings);
+                        }} 
+                      />
+                      <span className="toggle-slider"></span>
+                    </label>
                   </div>
                 </div>
               </div>

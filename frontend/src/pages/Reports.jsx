@@ -48,8 +48,6 @@ const Reports = () => {
   
   const navigate = useNavigate();
 
-
-
   const getToken = () => localStorage.getItem('poultryToken');
 
   useEffect(() => {
@@ -77,14 +75,25 @@ const Reports = () => {
     const token = getToken();
     
     try {
-      const farmsRes = await axios.get(`${API_URL}/farm/my-farms`, {
+      const farmsRes = await axios.get(`${API_URL}/farm/farms`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setFarms(farmsRes.data || []);
       
-      if (farmsRes.data && farmsRes.data.length > 0) {
-        setSelectedFarm(farmsRes.data[0]);
-        await loadRecordsAndSuggestions(farmsRes.data[0]._id);
+      // ✅ FIX: Handle both array and object responses
+      let farmsData = [];
+      if (Array.isArray(farmsRes.data)) {
+        farmsData = farmsRes.data;
+      } else if (farmsRes.data.farms && Array.isArray(farmsRes.data.farms)) {
+        farmsData = farmsRes.data.farms;
+      } else {
+        farmsData = [];
+      }
+      
+      setFarms(farmsData);
+      
+      if (farmsData.length > 0) {
+        setSelectedFarm(farmsData[0]);
+        await loadRecordsAndSuggestions(farmsData[0]._id);
       }
     } catch (error) {
       console.error('Error loading farms:', error);
@@ -102,8 +111,19 @@ const Reports = () => {
       const recordsRes = await axios.get(`${API_URL}/farm/records/${farmId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setDailyRecords(recordsRes.data || []);
-      setFilteredRecords(recordsRes.data || []);
+      
+      // ✅ FIX: Handle both array and object responses
+      let recordsData = [];
+      if (Array.isArray(recordsRes.data)) {
+        recordsData = recordsRes.data;
+      } else if (recordsRes.data.records && Array.isArray(recordsRes.data.records)) {
+        recordsData = recordsRes.data.records;
+      } else {
+        recordsData = [];
+      }
+      
+      setDailyRecords(recordsData);
+      setFilteredRecords(recordsData);
       
       const suggestionsRes = await axios.get(`${API_URL}/farm/suggestions/${farmId}`, {
         headers: { Authorization: `Bearer ${token}` }

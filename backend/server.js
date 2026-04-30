@@ -2,7 +2,6 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const path = require('path');
 
 dotenv.config();
 
@@ -24,16 +23,6 @@ if (!MONGODB_URI) {
   process.exit(1);
 }
 
-// MongoDB Connection
-mongoose.connect(MONGODB_URI)
-.then(() => {
-  console.log('✅ MongoDB Connected Successfully');
-  createAdminUser();
-})
-.catch(err => {
-  console.error('❌ MongoDB Connection Error:', err.message);
-});
-
 // Create admin user if not exists
 const createAdminUser = async () => {
   try {
@@ -41,7 +30,7 @@ const createAdminUser = async () => {
     const adminExists = await User.findOne({ email: process.env.ADMIN_EMAIL });
     if (!adminExists) {
       const admin = new User({
-        name: 'Admin',
+        name: 'Admin User',
         email: process.env.ADMIN_EMAIL,
         password: process.env.ADMIN_PASSWORD,
         role: 'admin',
@@ -57,12 +46,23 @@ const createAdminUser = async () => {
   }
 };
 
-// Routes
+// MongoDB Connection
+mongoose.connect(MONGODB_URI)
+.then(async () => {
+  console.log('✅ MongoDB Connected Successfully');
+  await createAdminUser();
+})
+.catch(err => {
+  console.error('❌ MongoDB Connection Error:', err.message);
+  process.exit(1);
+});
+
+// ============ ROUTES - ALL UNCOMMENTED ============
 app.use('/api/auth', require('./routes/auth'));
-app.use('/api/admin', require('./routes/admin'));
 app.use('/api/farm', require('./routes/farmRoutes'));
-app.use('/api/contact', require('./routes/contact'));
-app.use('/api/company', require('./routes/company'));
+// app.use('/api/admin', require('./routes/admin'));  // Uncomment when ready
+// app.use('/api/contact', require('./routes/contact'));  // Uncomment when ready
+// app.use('/api/company', require('./routes/company'));  // Uncomment when ready
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -74,11 +74,44 @@ app.get('/api/test', (req, res) => {
   res.json({ message: 'API is working!' });
 });
 
+// 404 handler for undefined routes
+app.use('*', (req, res) => {
+  res.status(404).json({ message: `Route ${req.originalUrl} not found` });
+});
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error('Server error:', err.message);
+  res.status(500).json({ message: 'Internal server error', error: err.message });
+});
+
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`\n🚀 Server running on port ${PORT}`);
+  console.log(`📍 URL: http://localhost:${PORT}`);
   console.log(`🔑 Admin Email: ${process.env.ADMIN_EMAIL || 'admin@poultryai.com'}`);
   console.log(`🔑 Admin Password: ${process.env.ADMIN_PASSWORD || 'admin123'}`);
-  console.log(`📊 MongoDB URI: ${MONGODB_URI ? '✓ Set' : '✗ Missing'}`);
-  console.log(`📡 Routes: auth, admin, farm, contact, company`);
+  console.log(`📊 MongoDB: ${MONGODB_URI ? '✓ Connected' : '✗ Missing'}`);
+  console.log(`\n📡 Available routes:`);
+  console.log(`   === AUTH ROUTES ===`);
+  console.log(`   - POST   /api/auth/register`);
+  console.log(`   - POST   /api/auth/login`);
+  console.log(`   - GET    /api/auth/profile`);
+  console.log(`   - PUT    /api/auth/profile`);
+  console.log(`   - POST   /api/auth/upload-profile-pic`);
+  console.log(`   - DELETE /api/auth/delete-profile-pic`);
+  console.log(`   - GET    /api/auth/stats`);
+  console.log(`   - PUT    /api/auth/notifications`);
+  console.log(`\n   === FARM ROUTES ===`);
+  console.log(`   - GET    /api/farm/farms`);
+  console.log(`   - GET    /api/farm/my-farms`);
+  console.log(`   - POST   /api/farm/farms`);
+  console.log(`   - PUT    /api/farm/farms/:farmId`);
+  console.log(`   - DELETE /api/farm/farms/:farmId`);
+  console.log(`   - GET    /api/farm/records/:farmId`);
+  console.log(`   - POST   /api/farm/records`);
+  console.log(`   - GET    /api/farm/suggestions/:farmId`);
+  console.log(`\n   === PUBLIC ROUTES ===`);
+  console.log(`   - GET    /api/health`);
+  console.log(`   - GET    /api/test`);
 });
