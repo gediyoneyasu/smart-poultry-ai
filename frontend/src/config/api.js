@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-const API_URL = 'http://localhost:5001/api';
-=======
 // API Configuration - Works for both local and production
 const getApiUrl = () => {
   // Production (Vercel)
@@ -13,5 +10,4 @@ const getApiUrl = () => {
 };
 
 const API_URL = getApiUrl();
->>>>>>> ab02156fa4aab92fdc2ce2181c2e0fda42de43f9
 export default API_URL;
