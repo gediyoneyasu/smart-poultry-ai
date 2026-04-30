@@ -1,4 +1,4 @@
-import API_URL from '../config/api';
+import API_URL from "../config/api";
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
@@ -48,7 +48,6 @@ const Reports = () => {
   
   const navigate = useNavigate();
 
-  import API_URL from '../config/api';
 
 
   const getToken = () => localStorage.getItem('poultryToken');

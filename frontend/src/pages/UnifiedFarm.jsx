@@ -1,5 +1,4 @@
 import API_URL from "../config/api";
-import API_URL from '../config/api';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
@@ -8,17 +7,16 @@ import './UnifiedFarm.css';
 
 const UnifiedFarm = () => {
   const [language, setLanguage] = useState('en');
+  const [activeView, setActiveView] = useState('overview');
   const [user, setUser] = useState(null);
   const [farms, setFarms] = useState([]);
   const [currentFarm, setCurrentFarm] = useState(null);
   const [dailyRecords, setDailyRecords] = useState([]);
   const [aiSuggestions, setAiSuggestions] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [showFarmForm, setShowFarmForm] = useState(false);
   const [showRecordForm, setShowRecordForm] = useState(false);
   const [editingFarm, setEditingFarm] = useState(null);
-  const [activeView, setActiveView] = useState('overview');
   
   const navigate = useNavigate();
 
@@ -40,6 +38,7 @@ const UnifiedFarm = () => {
   });
   
   const [recordForm, setRecordForm] = useState({
+    farmId: '',
     date: new Date().toISOString().split('T')[0],
     totalBirds: '',
     healthyBirds: '',
@@ -57,7 +56,6 @@ const UnifiedFarm = () => {
     notes: ''
   });
 
-  // Check authentication
   useEffect(() => {
     const token = getToken();
     const userData = getUser();
@@ -65,34 +63,33 @@ const UnifiedFarm = () => {
     if (savedLang) setLanguage(savedLang);
     
     if (!token || !userData) {
-      toast.error('Please login first');
+      toast.error('Please login to access farm management');
       navigate('/auth');
       return;
     }
     
     setUser(userData);
     loadUserData();
-  }, []);
+  }, [navigate]);
 
   const loadUserData = async () => {
     setLoading(true);
     const token = getToken();
     
     try {
-      // Load farms
       const farmsRes = await axios.get(`${API_URL}/farm/my-farms`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      console.log('Farms loaded:', farmsRes.data);
-      setFarms(farmsRes.data);
+      setFarms(farmsRes.data || []);
       
-      if (farmsRes.data.length > 0) {
+      if (farmsRes.data && farmsRes.data.length > 0) {
         setCurrentFarm(farmsRes.data[0]);
+        setRecordForm({ ...recordForm, farmId: farmsRes.data[0]._id });
         await loadRecords(farmsRes.data[0]._id);
       }
     } catch (error) {
       console.error('Error loading farms:', error);
-      toast.error('Failed to load farms');
+      setFarms([]);
     } finally {
       setLoading(false);
     }
@@ -104,10 +101,10 @@ const UnifiedFarm = () => {
       const recordsRes = await axios.get(`${API_URL}/farm/records/${farmId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      console.log('Records loaded:', recordsRes.data.length);
-      setDailyRecords(recordsRes.data);
+      setDailyRecords(recordsRes.data || []);
     } catch (error) {
       console.error('Error loading records:', error);
+      setDailyRecords([]);
     }
   };
 
@@ -128,7 +125,6 @@ const UnifiedFarm = () => {
   const handleSaveFarm = async (e) => {
     e.preventDefault();
     const token = getToken();
-    setSaving(true);
     
     try {
       if (editingFarm) {
@@ -136,35 +132,26 @@ const UnifiedFarm = () => {
           headers: { Authorization: `Bearer ${token}` }
         });
         setFarms(farms.map(f => f._id === editingFarm._id ? res.data : f));
-        toast.success('Farm updated successfully!');
+        toast.success('Farm updated!');
       } else {
         const res = await axios.post(`${API_URL}/farm/farms`, farmForm, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setFarms([...farms, res.data]);
-        toast.success('Farm created successfully!');
+        toast.success('Farm created!');
       }
       setShowFarmForm(false);
       setEditingFarm(null);
       setFarmForm({ name: '', location: '', totalBirds: 0, birdType: 'Layers', establishedDate: '', phone: '', email: '' });
-      await loadUserData();
+      loadUserData();
     } catch (error) {
-      console.error('Save error:', error);
       toast.error(error.response?.data?.message || 'Failed to save farm');
-    } finally {
-      setSaving(false);
     }
   };
 
   const handleSaveRecord = async (e) => {
     e.preventDefault();
-    if (!currentFarm) {
-      toast.error('Please select a farm first');
-      return;
-    }
-    
     const token = getToken();
-    setSaving(true);
     
     const dataToSave = {
       farmId: currentFarm._id,
@@ -189,11 +176,8 @@ const UnifiedFarm = () => {
       const res = await axios.post(`${API_URL}/farm/records`, dataToSave, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      console.log('Record saved:', res.data);
       setDailyRecords([res.data, ...dailyRecords]);
       setShowRecordForm(false);
-      
-      // Reset form
       setRecordForm({
         date: new Date().toISOString().split('T')[0],
         totalBirds: '',
@@ -211,19 +195,16 @@ const UnifiedFarm = () => {
         humidity: '',
         notes: ''
       });
-      
-      toast.success('Daily record saved successfully!');
-      await loadAISuggestions();
+      toast.success('Daily record saved!');
+      loadAISuggestions();
     } catch (error) {
-      console.error('Save record error:', error);
       toast.error(error.response?.data?.message || 'Failed to save record');
-    } finally {
-      setSaving(false);
     }
   };
 
   const handleSelectFarm = async (farm) => {
     setCurrentFarm(farm);
+    setRecordForm({ ...recordForm, farmId: farm._id });
     await loadRecords(farm._id);
     setAiSuggestions(null);
   };
@@ -325,7 +306,6 @@ const UnifiedFarm = () => {
 
   const t = translations[language];
   
-  // Calculate totals
   const totalIncome = dailyRecords.reduce((sum, r) => sum + (r.eggsSold || 0) * (r.eggPrice || 5), 0);
   const totalExpenses = dailyRecords.reduce((sum, r) => sum + (r.feedCost || 0) + (r.medicineCost || 0) + (r.otherExpenses || 0), 0);
   const profit = totalIncome - totalExpenses;
@@ -343,14 +323,12 @@ const UnifiedFarm = () => {
   return (
     <div className="unified-farm-page">
       <div className="farm-container-unified">
-        {/* Header */}
         <div className="farm-header-unified">
           <h1>{t.title}</h1>
           <p>{t.subtitle}</p>
           {user && <div className="welcome-banner">👋 Welcome, {user.name}!</div>}
         </div>
 
-        {/* Farm Selector */}
         <div className="farm-selector-unified">
           <div className="selector-header">
             <span><i className="fas fa-tractor"></i> {t.myFarms} ({farms.length})</span>
@@ -360,7 +338,7 @@ const UnifiedFarm = () => {
           </div>
           <div className="selector-farms">
             {farms.length === 0 ? (
-              <div className="no-farms">{t.noFarms}</div>
+              <div className="no-farms-message">{t.noFarms}</div>
             ) : (
               farms.map(farm => (
                 <div key={farm._id} className={`farm-card-mini ${currentFarm?._id === farm._id ? 'active' : ''}`}>
@@ -379,7 +357,6 @@ const UnifiedFarm = () => {
           </div>
         </div>
 
-        {/* Quick Stats */}
         {currentFarm && (
           <div className="quick-stats">
             <div className="stat"><span className="stat-icon">🐔</span><div className="stat-info"><label>{t.totalBirds}</label><strong>{currentFarm.totalBirds}</strong></div></div>
@@ -389,7 +366,6 @@ const UnifiedFarm = () => {
           </div>
         )}
 
-        {/* Tabs */}
         {currentFarm && (
           <div className="farm-tabs-unified">
             <button className={`tab ${activeView === 'overview' ? 'active' : ''}`} onClick={() => setActiveView('overview')}><i className="fas fa-chart-pie"></i> {t.overview}</button>
@@ -398,7 +374,16 @@ const UnifiedFarm = () => {
           </div>
         )}
 
-        {/* Overview Tab */}
+        {!currentFarm && farms.length === 0 && (
+          <div className="no-farm-message">
+            <i className="fas fa-tractor"></i>
+            <p>{t.noFarms}</p>
+            <button className="create-farm-btn" onClick={() => setShowFarmForm(true)}>
+              <i className="fas fa-plus"></i> {t.addFarm}
+            </button>
+          </div>
+        )}
+
         {activeView === 'overview' && currentFarm && (
           <div className="overview-tab">
             <div className="farm-details-card">
@@ -414,59 +399,55 @@ const UnifiedFarm = () => {
 
             <div className="recent-records">
               <h3><i className="fas fa-history"></i> {t.recentRecords}</h3>
-              {dailyRecords.length === 0 ? (
-                <div className="no-records">{t.noRecords}</div>
-              ) : (
-                <div className="records-preview">
-                  {dailyRecords.slice(0, 5).map(record => (
-                    <div key={record._id} className="preview-record">
-                      <span className="date">{new Date(record.date).toLocaleDateString()}</span>
-                      <span className="eggs">🥚 {record.eggsCollected || 0}</span>
-                      <span className="health">❤️ {record.healthyBirds || 0}</span>
-                      <span className={record.deadBirds > 0 ? 'danger' : ''}>💀 {record.deadBirds || 0}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <div className="records-preview">
+                {dailyRecords.slice(0, 5).map(record => (
+                  <div key={record._id} className="preview-record">
+                    <span className="date">{new Date(record.date).toLocaleDateString()}</span>
+                    <span className="eggs">🥚 {record.eggsCollected || 0}</span>
+                    <span className="health">❤️ {record.healthyBirds || 0}</span>
+                    <span className={record.deadBirds > 0 ? 'danger' : ''}>💀 {record.deadBirds || 0}</span>
+                  </div>
+                ))}
+                {dailyRecords.length === 0 && <div className="no-records">{t.noRecords}</div>}
+              </div>
             </div>
           </div>
         )}
 
-        {/* Records Tab */}
         {activeView === 'records' && currentFarm && (
           <div className="records-tab">
-            {dailyRecords.length === 0 ? (
-              <div className="empty-records">
-                <i className="fas fa-calendar-alt"></i>
-                <p>{t.noRecords}</p>
-                <button className="add-record-btn" onClick={() => setShowRecordForm(true)}><i className="fas fa-plus"></i> {t.addRecord}</button>
-              </div>
-            ) : (
-              <div className="records-table-container">
+            <div className="records-table-container">
+              {dailyRecords.length === 0 ? (
+                <div className="empty-records">
+                  <i className="fas fa-calendar-alt"></i>
+                  <p>{t.noRecords}</p>
+                </div>
+              ) : (
                 <table className="records-table">
-                  <thead><tr><th>{t.date}</th><th>🥚 {t.eggs}</th><th>❤️ {t.healthy}</th><th>🤒 {t.sick}</th><th>💀 {t.dead}</th><th>💰 {t.profit}</th></tr></thead>
+                  <thead>
+                    <tr><th>{t.date}</th><th>🐔 {t.healthy}</th><th>🤒 {t.sick}</th><th>💀 {t.dead}</th><th>🥚 {t.eggs}</th><th>💰 Profit</th></tr>
+                  </thead>
                   <tbody>
                     {dailyRecords.map(record => {
                       const recordProfit = (record.eggsSold || 0) * (record.eggPrice || 5) - ((record.feedCost || 0) + (record.medicineCost || 0) + (record.otherExpenses || 0));
                       return (
                         <tr key={record._id}>
                           <td>{new Date(record.date).toLocaleDateString()}</td>
-                          <td>{record.eggsCollected || 0}</td>
                           <td>{record.healthyBirds || 0}</td>
                           <td className="warning">{record.sickBirds || 0}</td>
                           <td className="danger">{record.deadBirds || 0}</td>
+                          <td>{record.eggsCollected || 0}</td>
                           <td className={recordProfit >= 0 ? 'profit' : 'loss'}>ETB {recordProfit}</td>
                         </tr>
                       );
                     })}
                   </tbody>
                 </table>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         )}
 
-        {/* AI Insights Tab */}
         {activeView === 'insights' && currentFarm && (
           <div className="insights-tab">
             {aiSuggestions ? (
@@ -486,7 +467,6 @@ const UnifiedFarm = () => {
           </div>
         )}
 
-        {/* Farm Form Modal */}
         {showFarmForm && (
           <div className="modal-overlay" onClick={() => setShowFarmForm(false)}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -496,39 +476,37 @@ const UnifiedFarm = () => {
                 <input type="text" placeholder={t.location} value={farmForm.location} onChange={(e) => setFarmForm({...farmForm, location: e.target.value})} />
                 <input type="number" placeholder={t.totalBirds} value={farmForm.totalBirds} onChange={(e) => setFarmForm({...farmForm, totalBirds: parseInt(e.target.value)})} required />
                 <select value={farmForm.birdType} onChange={(e) => setFarmForm({...farmForm, birdType: e.target.value})}><option value="Layers">{t.layers}</option><option value="Broilers">{t.broilers}</option></select>
-                <input type="date" value={farmForm.establishedDate} onChange={(e) => setFarmForm({...farmForm, establishedDate: e.target.value})} />
+                <input type="date" placeholder="Established Date" value={farmForm.establishedDate} onChange={(e) => setFarmForm({...farmForm, establishedDate: e.target.value})} />
                 <input type="tel" placeholder="Phone" value={farmForm.phone} onChange={(e) => setFarmForm({...farmForm, phone: e.target.value})} />
                 <input type="email" placeholder="Email" value={farmForm.email} onChange={(e) => setFarmForm({...farmForm, email: e.target.value})} />
-                <div className="modal-buttons"><button type="submit" className="save-btn" disabled={saving}>{saving ? t.saving : t.save}</button><button type="button" className="cancel-btn" onClick={() => setShowFarmForm(false)}>{t.cancel}</button></div>
+                <div className="modal-buttons"><button type="submit" className="save-btn">{t.save}</button><button type="button" className="cancel-btn" onClick={() => setShowFarmForm(false)}>{t.cancel}</button></div>
               </form>
             </div>
           </div>
         )}
 
-        {/* Daily Record Form Modal */}
         {showRecordForm && currentFarm && (
           <div className="modal-overlay" onClick={() => setShowRecordForm(false)}>
             <div className="modal-content large" onClick={(e) => e.stopPropagation()}>
               <h2>📝 Add Daily Record - {currentFarm.name}</h2>
               <form onSubmit={handleSaveRecord}>
                 <div className="form-grid">
-                  <div className="form-field"><label>📅 Date</label><input type="date" value={recordForm.date} onChange={(e) => setRecordForm({...recordForm, date: e.target.value})} required /></div>
-                  <div className="form-field"><label>🐔 Total Birds</label><input type="number" placeholder="e.g., 500" value={recordForm.totalBirds} onChange={(e) => setRecordForm({...recordForm, totalBirds: e.target.value})} /></div>
-                  <div className="form-field"><label>❤️ Healthy Birds</label><input type="number" placeholder="Number of healthy birds" value={recordForm.healthyBirds} onChange={(e) => setRecordForm({...recordForm, healthyBirds: e.target.value})} /></div>
-                  <div className="form-field"><label>🤒 Sick Birds</label><input type="number" placeholder="Number of sick birds" value={recordForm.sickBirds} onChange={(e) => setRecordForm({...recordForm, sickBirds: e.target.value})} /></div>
-                  <div className="form-field"><label>💀 Dead Birds</label><input type="number" placeholder="Number of dead birds" value={recordForm.deadBirds} onChange={(e) => setRecordForm({...recordForm, deadBirds: e.target.value})} /></div>
-                  <div className="form-field"><label>🥚 Eggs Collected</label><input type="number" placeholder="Total eggs today" value={recordForm.eggsCollected} onChange={(e) => setRecordForm({...recordForm, eggsCollected: e.target.value})} /></div>
-                  <div className="form-field"><label>💰 Eggs Sold</label><input type="number" placeholder="Eggs sold today" value={recordForm.eggsSold} onChange={(e) => setRecordForm({...recordForm, eggsSold: e.target.value})} /></div>
-                  <div className="form-field"><label>💵 Egg Price (ETB)</label><input type="number" step="0.5" placeholder="e.g., 5.00" value={recordForm.eggPrice} onChange={(e) => setRecordForm({...recordForm, eggPrice: e.target.value})} /></div>
-                  <div className="form-field"><label>🌾 Feed Consumed (kg)</label><input type="number" placeholder="Feed eaten (kg)" value={recordForm.feedConsumed} onChange={(e) => setRecordForm({...recordForm, feedConsumed: e.target.value})} /></div>
-                  <div className="form-field"><label>💰 Feed Cost (ETB)</label><input type="number" placeholder="Cost of feed" value={recordForm.feedCost} onChange={(e) => setRecordForm({...recordForm, feedCost: e.target.value})} /></div>
-                  <div className="form-field"><label>💊 Medicine Cost</label><input type="number" placeholder="Medicine expenses" value={recordForm.medicineCost} onChange={(e) => setRecordForm({...recordForm, medicineCost: e.target.value})} /></div>
-                  <div className="form-field"><label>📋 Other Expenses</label><input type="number" placeholder="Electricity, water, etc." value={recordForm.otherExpenses} onChange={(e) => setRecordForm({...recordForm, otherExpenses: e.target.value})} /></div>
-                  <div className="form-field"><label>🌡️ Temperature (°C)</label><input type="number" step="0.1" placeholder="e.g., 32.5" value={recordForm.temperature} onChange={(e) => setRecordForm({...recordForm, temperature: e.target.value})} /></div>
-                  <div className="form-field"><label>💧 Humidity (%)</label><input type="number" placeholder="e.g., 65" value={recordForm.humidity} onChange={(e) => setRecordForm({...recordForm, humidity: e.target.value})} /></div>
+                  <input type="date" value={recordForm.date} onChange={(e) => setRecordForm({...recordForm, date: e.target.value})} required />
+                  <input type="number" placeholder="🐔 Healthy Birds" value={recordForm.healthyBirds} onChange={(e) => setRecordForm({...recordForm, healthyBirds: parseInt(e.target.value)})} />
+                  <input type="number" placeholder="🤒 Sick Birds" value={recordForm.sickBirds} onChange={(e) => setRecordForm({...recordForm, sickBirds: parseInt(e.target.value)})} />
+                  <input type="number" placeholder="💀 Dead Birds" value={recordForm.deadBirds} onChange={(e) => setRecordForm({...recordForm, deadBirds: parseInt(e.target.value)})} />
+                  <input type="number" placeholder="🥚 Eggs Collected" value={recordForm.eggsCollected} onChange={(e) => setRecordForm({...recordForm, eggsCollected: parseInt(e.target.value)})} />
+                  <input type="number" placeholder="💰 Eggs Sold" value={recordForm.eggsSold} onChange={(e) => setRecordForm({...recordForm, eggsSold: parseInt(e.target.value)})} />
+                  <input type="number" step="0.5" placeholder="💵 Egg Price (ETB)" value={recordForm.eggPrice} onChange={(e) => setRecordForm({...recordForm, eggPrice: parseFloat(e.target.value)})} />
+                  <input type="number" placeholder="🌾 Feed Consumed (kg)" value={recordForm.feedConsumed} onChange={(e) => setRecordForm({...recordForm, feedConsumed: parseInt(e.target.value)})} />
+                  <input type="number" placeholder="💰 Feed Cost (ETB)" value={recordForm.feedCost} onChange={(e) => setRecordForm({...recordForm, feedCost: parseInt(e.target.value)})} />
+                  <input type="number" placeholder="💊 Medicine Cost" value={recordForm.medicineCost} onChange={(e) => setRecordForm({...recordForm, medicineCost: parseInt(e.target.value)})} />
+                  <input type="number" placeholder="📋 Other Expenses" value={recordForm.otherExpenses} onChange={(e) => setRecordForm({...recordForm, otherExpenses: parseInt(e.target.value)})} />
+                  <input type="number" step="0.1" placeholder="🌡️ Temperature (°C)" value={recordForm.temperature} onChange={(e) => setRecordForm({...recordForm, temperature: parseFloat(e.target.value)})} />
+                  <input type="number" placeholder="💧 Humidity (%)" value={recordForm.humidity} onChange={(e) => setRecordForm({...recordForm, humidity: parseInt(e.target.value)})} />
                 </div>
-                <div className="form-field full-width"><label>📝 Notes</label><textarea rows="2" placeholder="Any observations..." value={recordForm.notes} onChange={(e) => setRecordForm({...recordForm, notes: e.target.value})} /></div>
-                <div className="modal-buttons"><button type="submit" className="save-btn" disabled={saving}>{saving ? t.saving : t.save}</button><button type="button" className="cancel-btn" onClick={() => setShowRecordForm(false)}>{t.cancel}</button></div>
+                <textarea placeholder="📝 Notes" rows="2" value={recordForm.notes} onChange={(e) => setRecordForm({...recordForm, notes: e.target.value})} />
+                <div className="modal-buttons"><button type="submit" className="save-btn">{t.save}</button><button type="button" className="cancel-btn" onClick={() => setShowRecordForm(false)}>{t.cancel}</button></div>
               </form>
             </div>
           </div>
