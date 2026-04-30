@@ -20,7 +20,6 @@ const UnifiedFarm = () => {
   const [activeView, setActiveView] = useState('overview');
   
   const navigate = useNavigate();
-  const API_URL = 'API_URL';
 
   const getToken = () => localStorage.getItem('poultryToken');
   const getUser = () => {

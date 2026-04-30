@@ -1,5 +1,5 @@
-import API_URL from "../config/api";
-import React, { useState, useEffect } from 'react';
+import API_URL from '../config/api';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
@@ -34,7 +34,6 @@ ChartJS.register(
 
 const Reports = () => {
   const [language, setLanguage] = useState('en');
-  const [user, setUser] = useState(null);
   const [farms, setFarms] = useState([]);
   const [selectedFarm, setSelectedFarm] = useState(null);
   const [dailyRecords, setDailyRecords] = useState([]);
@@ -48,29 +47,22 @@ const Reports = () => {
   const [refreshing, setRefreshing] = useState(false);
   
   const navigate = useNavigate();
-  const API_URL = 'API_URL';
 
   const getToken = () => localStorage.getItem('poultryToken');
-  const getUser = () => {
-    const userData = localStorage.getItem('poultryUser');
-    return userData ? JSON.parse(userData) : null;
-  };
 
   useEffect(() => {
     const token = getToken();
-    const userData = getUser();
     const savedLang = localStorage.getItem('language');
     if (savedLang) setLanguage(savedLang);
     
-    if (!token || !userData) {
+    if (!token) {
       toast.error('Please login to view reports');
       navigate('/auth');
       return;
     }
     
-    setUser(userData);
     loadAllData();
-  }, []);
+  }, [navigate]);
 
   useEffect(() => {
     if (dailyRecords.length > 0) {
@@ -86,9 +78,9 @@ const Reports = () => {
       const farmsRes = await axios.get(`${API_URL}/farm/my-farms`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setFarms(farmsRes.data);
+      setFarms(farmsRes.data || []);
       
-      if (farmsRes.data.length > 0) {
+      if (farmsRes.data && farmsRes.data.length > 0) {
         setSelectedFarm(farmsRes.data[0]);
         await loadRecordsAndSuggestions(farmsRes.data[0]._id);
       }
@@ -108,8 +100,8 @@ const Reports = () => {
       const recordsRes = await axios.get(`${API_URL}/farm/records/${farmId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setDailyRecords(recordsRes.data);
-      setFilteredRecords(recordsRes.data);
+      setDailyRecords(recordsRes.data || []);
+      setFilteredRecords(recordsRes.data || []);
       
       const suggestionsRes = await axios.get(`${API_URL}/farm/suggestions/${farmId}`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -129,9 +121,8 @@ const Reports = () => {
     await loadRecordsAndSuggestions(farmId);
   };
 
-  const filterRecordsByDate = () => {
+  const filterRecordsByDate = useCallback(() => {
     let filtered = [...dailyRecords];
-    const now = new Date();
     
     if (dateRange === 'week') {
       const weekAgo = new Date();
@@ -153,7 +144,7 @@ const Reports = () => {
     }
     
     setFilteredRecords(filtered.sort((a, b) => new Date(a.date) - new Date(b.date)));
-  };
+  }, [dateRange, startDate, endDate, dailyRecords]);
 
   const refreshData = () => {
     if (selectedFarm) {

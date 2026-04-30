@@ -82,3 +82,7 @@ app.listen(PORT, () => {
   console.log(`🔑 Admin Password: ${process.env.ADMIN_PASSWORD || 'admin123'}`);
   console.log(`📊 MongoDB URI: ${MONGODB_URI ? '✓ Set' : '✗ Missing'}`);
 });
+
+app.get("/api/test", (req, res) => {
+  res.json({ message: "API is working!" });
+});
