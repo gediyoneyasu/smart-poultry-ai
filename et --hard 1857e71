@@ -1,0 +1,14 @@
+[33mf018c2e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m error1
+[33m3fd9faf[m Fix authentication: update CORS, AuthContext, and error handling
+[33m1857e71[m css part of home
+[33maf1084a[m enhace chatebot
+[33m81e963d[m Hide navigation arrows on homepage slider
+[33m39138b9[m Simplify vercel.json to fix build
+[33m6935069[m Fix: Add @google/generative-ai dependency and dynamic import
+[33m6530140[m Fix: Add missing Gemini AI package and optimize for Vercel build
+[33m89eda8d[m Re-add frontend as regular folder
+[33mb2cdbbd[m Remove frontend submodule
+[33mbbbc02d[m Fix: Add frontend as regular folder (not submodule)
+[33ma991711[m Fix: Add better MongoDB error handling
+[33m2732a74[m first commit
+[33me85eeee[m Initial commit: Smart Poultry AI full stack application
