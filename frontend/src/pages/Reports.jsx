@@ -47,6 +47,10 @@ const Reports = () => {
   const [refreshing, setRefreshing] = useState(false);
   
   const navigate = useNavigate();
+<<<<<<< HEAD
+=======
+  import API_URL from '../config/api';
+>>>>>>> ab02156fa4aab92fdc2ce2181c2e0fda42de43f9
 
   const getToken = () => localStorage.getItem('poultryToken');
 

@@ -23,7 +23,7 @@ function Home() {
       titleSpan: "Health Management",
       subtitle: "Detect diseases early, predict outbreaks, and get smart recommendations for healthier chickens",
       shopNow: "Start Diagnosis",
-      contactUs: "Contact Us",
+      callNow: "Contact Vet",
       featuresTitle: "Why Choose Smart Poultry AI?",
       features: [
         { icon: "fas fa-microscope", title: "AI Disease Detection", desc: "Instant diagnosis from chicken images" },
@@ -58,11 +58,7 @@ function Home() {
       aiInsights: "AI Insights",
       uploadImage: "Upload Chicken Image",
       analyze: "Analyze Now",
-      recommendations: "AI Recommendations",
-      diseaseSolution: "Disease & Solutions",
-      analyzeAI: "AI Analysis",
-      farmReport: "Farm & Reports",
-      getStartedBtn: "Get Started"
+      recommendations: "AI Recommendations"
     },
     am: {
       welcome: "እንኳን ወደ ስማርት ዶሮ ኤአይ በደህና መጡ",
@@ -70,7 +66,7 @@ function Home() {
       titleSpan: "ጤና አያያዝ",
       subtitle: "በሽታዎችን ቀድመው ይለዩ፣ ወረርሽኞችን ይተንብዩ እና ለጤናማ ዶሮዎች ስማርት ምክሮችን ያግኙ",
       shopNow: "ምርመራ ጀምር",
-      contactUs: "አግኙን",
+      callNow: "የእንስሳት ሐኪም ደውል",
       featuresTitle: "ለምን ስማርት ዶሮ ኤአይ ይመርጣሉ?",
       features: [
         { icon: "fas fa-microscope", title: "ኤአይ በሽታ መለየት", desc: "ከዶሮ ፎቶ ፈጣን ምርመራ" },
@@ -105,11 +101,7 @@ function Home() {
       aiInsights: "ኤአይ ግንዛቤዎች",
       uploadImage: "የዶሮ ፎቶ ስቀልጥ",
       analyze: "አሁን ተንትን",
-      recommendations: "ኤአይ ምክሮች",
-      diseaseSolution: "በሽታ እና መፍትሄ",
-      analyzeAI: "ኤአይ ትንተና",
-      farmReport: "እርሻ እና ሪፖርቶች",
-      getStartedBtn: "ይጀምሩ"
+      recommendations: "ኤአይ ምክሮች"
     }
   };
 
@@ -122,9 +114,12 @@ function Home() {
       titleAm: "በኤአይ የሚመራ በሽታ መለየት",
       subtitle: "Upload a chicken image and get instant diagnosis",
       subtitleAm: "የዶሮ ፎቶ ስቀልጥ እና ፈጣን ምርመራ ያግኙ",
-      buttonText: "Start Diagnosis",
-      buttonTextAm: "ምርመራ ጀምር",
-      buttonLink: "/analyze"
+      button1Text: "Start Diagnosis",
+      button1TextAm: "ምርመራ ጀምር",
+      button1Link: "/analyze",
+      button2Text: "Contact Us",
+      button2TextAm: "አግኙን",
+      button2Link: "/contact"
     },
     {
       image: "https://media.istockphoto.com/id/1341463294/photo/close-up-of-brown-hen-free-range-chicken-in-the-grass.jpg?s=612x612&w=0&k=20&c=3BGTPIE55thCWNb9lenNIjda7fs0CyEPZaznfaAl0cQ=",
@@ -154,9 +149,32 @@ function Home() {
     }
   ];
 
+  const categories = [
+    { name: "Newcastle Disease", icon: "fas fa-virus", count: 124, image: "https://stmaaprodfwsite.blob.core.windows.net/assets/sites/1/2020/06/002_769_IMG_chickenwithnewcastledisease.jpg", description: "Highly contagious viral disease", descriptionAm: "በጣም ተላላፊ የቫይረስ በሽታ" },
+    { name: "Coccidiosis", icon: "fas fa-biohazard", count: 89, image: "https://via.placeholder.com/400x300?text=Coccidiosis", description: "Parasitic intestinal disease", descriptionAm: "ጥገኛ የአንጀት በሽታ" },
+    { name: "Fowl Typhoid", icon: "fas fa-temperature-high", count: 67, image: "https://via.placeholder.com/400x300?text=Fowl+Typhoid", description: "Bacterial infection", descriptionAm: "የባክቴሪያ ኢንፌኽሽን" },
+    { name: "Marek's Disease", icon: "fas fa-dna", count: 53, image: "https://via.placeholder.com/400x300?text=Marek%27s+Disease", description: "Viral tumor disease", descriptionAm: "የቫይረስ እጢ በሽታ" }
+  ];
+
+  const aiFeatures = [
+    { name: "Disease Detection", nameAm: "በሽታ መለየት", price: "Free", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHnPcdqjOjDnYiiwaHQO4027scofs9yRW7wg&s", description: "Upload image for instant AI diagnosis" },
+    { name: "Health Prediction", nameAm: "ጤና ትንበያ", price: "Free", image: "https://pixie.co.in/wp-content/uploads/2025/05/WhatsApp-Image-2025-05-07-at-5.30.58-PM-640x640.jpeg", description: "48-hour outbreak prediction" },
+    { name: "AI Chatbot", nameAm: "ኤአይ ቻትቦት", price: "Free", image: "https://via.placeholder.com/400x300?text=AI+Chatbot", description: "24/7 bilingual support" },
+    { name: "Farm Analytics", nameAm: "እርሻ ትንተና", price: "Free", image: "https://www.shutterstock.com/image-photo/smart-farming-concept-farmer-monitoring-260nw-2688093721.jpg", description: "Real-time farm monitoring" }
+  ];
+
+  const projects = [
+    { title: "Bishoftu Poultry Farm", titleAm: "ቢሾፍቱ ዶሮ እርሻ", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQyZjfRa2mby1ZDqqCXM6W7nJydpLc9rSb_Gw&s", description: "Reduced mortality by 45% using AI predictions", descriptionAm: "በኤአይ ትንበያ ሞትን በ45% ቀንሷል" },
+    { title: "Debre Zeit Farmers Coop", titleAm: "ደብረ ዘይት አርሶ አደሮች ህብረት", image: "https://via.placeholder.com/400x300?text=Debre+Zeit+Farmers", description: "Early disease detection saved 2,000+ chickens", descriptionAm: "ቅድመ በሽታ መለየት ከ2,000 በላይ ዶሮዎችን አድኗል" }
+  ];
+
+  const testimonials = [
+    { name: "Gediyon Eyasu", nameAm: "ገድዮን እያሱ", role: "Poultry Farmer, Bishoftu", roleAm: "የዶሮ እርሻ ባለቤት, ቢሾፍቱ", comment: "This AI system saved my flock! Detected Newcastle disease early.", commentAm: "ይህ ኤአይ ስርዓት መንጋዬን አድኖኛል! ኒውካስል በሽታን ቀድሞ አውቋል", rating: 5, image: "https://res.cloudinary.com/doynbjtn0/image/upload/v1777480792/photo_2024-12-30_18-40-18_gcfhdl.jpg" },
+    { name: "Bereket Gelane", nameAm: "በረከት ገላኔ", role: "Farm Manager, Debre Zeit", roleAm: "የእርሻ አስተዳዳሪ, ደብረ ዘይት", comment: "The prediction feature helped us prepare before outbreak.", commentAm: "የትንበያ ባህሪው ወረርሽኝ ከመከሰቱ በፊት እንድንዘጋጅ ረድቶናል", rating: 5, image: "https://res.cloudinary.com/doynbjtn0/image/upload/v1777480867/photo_2026-04-29_19-39-28_uocnzg.jpg" }
+  ];
+
   return (
     <div className="poultry-home-page">
-      {/* Hero Slider Section */}
       <div className="poultry-hero-slider">
         <Swiper
           modules={[Autoplay, Pagination, Navigation, EffectFade]}
@@ -164,7 +182,7 @@ function Home() {
           loop={true}
           effect="fade"
           pagination={{ clickable: true }}
-          navigation={false}
+          navigation={true}
           className="poultry-hero-swiper"
         >
           {sliders.map((slider, index) => (
@@ -177,8 +195,8 @@ function Home() {
                 <div className="poultry-hero-buttons">
                   {index === 0 && (
                     <>
-                      <Link to={slider.buttonLink} className="poultry-btn-primary">{language === 'en' ? slider.buttonText : slider.buttonTextAm}</Link>
-                      <a href="tel:+251964113416" className="poultry-btn-secondary">{t.contactUs}</a>
+                      <Link to={slider.button1Link} className="poultry-btn-primary">{language === 'en' ? slider.button1Text : slider.button1TextAm}</Link>
+                      <Link to={slider.button2Link} className="poultry-btn-secondary">{language === 'en' ? slider.button2Text : slider.button2TextAm}</Link>
                     </>
                   )}
                   {index === 1 && (
@@ -200,7 +218,6 @@ function Home() {
         </Swiper>
       </div>
 
-      {/* Features Section */}
       <section className="poultry-features-section">
         <div className="poultry-container">
           <h2 className="poultry-section-title">{t.featuresTitle}</h2>
@@ -216,7 +233,6 @@ function Home() {
         </div>
       </section>
 
-      {/* Stats Section */}
       <section className="poultry-stats-section">
         <div className="poultry-container">
           <h2 className="poultry-section-title">{t.farmStats}</h2>
@@ -253,7 +269,6 @@ function Home() {
         </div>
       </section>
 
-      {/* Categories/Diseases Section */}
       <section className="poultry-categories-section">
         <div className="poultry-container">
           <div className="poultry-section-header">
@@ -261,12 +276,37 @@ function Home() {
             <Link to="/diseases" className="poultry-view-all">{t.viewAllCategories} <i className="fas fa-arrow-right"></i></Link>
           </div>
           <div className="poultry-categories-grid">
-            {/* Add your category cards here - keeping existing code */}
+            {categories.map((category, idx) => (
+              <div className="poultry-category-item" key={idx}>
+                <div className="poultry-category-card" style={{ backgroundImage: `url(${category.image})` }}>
+                  <div className="poultry-category-overlay"></div>
+                  <span className="poultry-category-badge-front">{category.count} Cases</span>
+                  <div className="poultry-category-front-content">
+                    <button type="button">{category.name}</button>
+                  </div>
+                </div>
+                <div className="poultry-card-back" style={{ backgroundImage: `url(${category.image})` }}>
+                  <div className="poultry-back-price">{category.name}</div>
+                  <div className="poultry-back-content">
+                    <h3>{category.name}</h3>
+                    <p>{language === 'en' ? category.description : category.descriptionAm}</p>
+                    <div className="poultry-back-stats">
+                      <span><i className="fas fa-chart-line"></i> {category.count} Reported</span>
+                      <span><i className="fas fa-microscope"></i> AI Detectable</span>
+                    </div>
+                  </div>
+                  <div className="poultry-explore-link">
+                    <Link to={`/diseases?disease=${category.name}`}>
+                      Learn More <i className="fas fa-arrow-right"></i>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* AI Features Section */}
       <section className="poultry-featured-section">
         <div className="poultry-container">
           <div className="poultry-section-header">
@@ -274,28 +314,107 @@ function Home() {
             <Link to="/dashboard" className="poultry-view-all">{t.viewAll} <i className="fas fa-arrow-right"></i></Link>
           </div>
           <div className="poultry-products-grid">
-            {/* Add your AI features cards here - keeping existing code */}
+            {aiFeatures.map((feature, idx) => (
+              <div key={idx} className="poultry-product-card">
+                <div className="poultry-product-image">
+                  <img src={feature.image} alt={feature.name} />
+                </div>
+                <div className="poultry-product-info">
+                  <h3>{language === 'en' ? feature.name : feature.nameAm}</h3>
+                  <div className="poultry-product-price">{feature.price}</div>
+                  <p className="poultry-product-desc">{language === 'en' ? feature.description : (feature.descriptionAm || feature.description)}</p>
+                  <Link to="/analyze" className="poultry-add-to-cart-btn">
+                    <i className="fas fa-microscope"></i> {t.addToCart}
+                  </Link>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Testimonials Section */}
+      {projects.length > 0 && (
+        <section className="poultry-projects-section">
+          <div className="poultry-container">
+            <div className="poultry-section-header">
+              <h2 className="poultry-section-title">{t.projects}</h2>
+              <Link to="/success-stories" className="poultry-view-all-link">
+                {t.viewAllProjects} <i className="fas fa-arrow-right"></i>
+              </Link>
+            </div>
+            <div className="poultry-projects-grid">
+              {projects.map((project, idx) => (
+                <div key={idx} className="poultry-project-card">
+                  <div className="poultry-project-image">
+                    <img src={project.image} alt={project.title} />
+                  </div>
+                  <div className="poultry-project-info">
+                    <h3>{language === 'en' ? project.title : project.titleAm}</h3>
+                    <p>{language === 'en' ? project.description : project.descriptionAm}</p>
+                    <Link to="/success-stories" className="poultry-view-btn">
+                      {language === 'en' ? 'Read Story' : 'ታሪክ ያንብቡ'}
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      <section className="poultry-sensor-section">
+        <div className="poultry-container">
+          <h2 className="poultry-section-title">{t.sensorData}</h2>
+          <div className="poultry-sensor-grid">
+            <div className="poultry-sensor-card high-risk">
+              <h3>House A</h3>
+              <p>🌡️ {t.temperature}: 31.2°C</p>
+              <p>💧 {t.humidity}: 68%</p>
+              <span className="poultry-risk-badge high">{t.moderateRisk}</span>
+            </div>
+            <div className="poultry-sensor-card critical-risk">
+              <h3>House B</h3>
+              <p>🌡️ {t.temperature}: 34.5°C</p>
+              <p>💧 {t.humidity}: 72%</p>
+              <span className="poultry-risk-badge critical">{t.highRisk}</span>
+            </div>
+            <div className="poultry-sensor-card low-risk">
+              <h3>House C</h3>
+              <p>🌡️ {t.temperature}: 29.8°C</p>
+              <p>💧 {t.humidity}: 55%</p>
+              <span className="poultry-risk-badge low">{t.lowRisk}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="poultry-testimonials-section">
         <div className="poultry-container">
           <h2 className="poultry-section-title">{t.testimonials}</h2>
           <div className="poultry-testimonials-grid">
-            {/* Add your testimonials here - keeping existing code */}
+            {testimonials.map((testimonial, idx) => (
+              <div key={idx} className="poultry-testimonial-card">
+                <div className="poultry-testimonial-image">
+                  <img src={testimonial.image} alt={testimonial.name} />
+                </div>
+                <div className="poultry-testimonial-rating">
+                  {[...Array(5)].map((_, i) => <i key={i} className={i < testimonial.rating ? 'fas fa-star' : 'far fa-star'}></i>)}
+                </div>
+                <p>"{language === 'en' ? testimonial.comment : testimonial.commentAm}"</p>
+                <h4>{language === 'en' ? testimonial.name : testimonial.nameAm}</h4>
+                <span>{language === 'en' ? testimonial.role : testimonial.roleAm}</span>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
       <section className="poultry-cta-section">
         <div className="poultry-container">
           <div className="poultry-cta-content">
             <h2>{t.getStarted}</h2>
             <p>{language === 'en' ? 'Start protecting your poultry farm with AI today' : 'ዛሬውኑ የዶሮ እርሻዎን በኤአይ መጠበቅ ይጀምሩ'}</p>
-            <Link to="/analyze" className="poultry-cta-btn">{t.getStartedBtn} <i className="fas fa-arrow-right"></i></Link>
+            <Link to="/analyze" className="poultry-cta-btn">{t.getStarted} <i className="fas fa-arrow-right"></i></Link>
           </div>
         </div>
       </section>
