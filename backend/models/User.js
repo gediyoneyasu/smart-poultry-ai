@@ -5,7 +5,8 @@ const bcrypt = require('bcryptjs');
 const DailyRecordSchema = new mongoose.Schema({
   farmId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Farm'
+    ref: 'Farm',
+    required: true
   },
   date: {
     type: Date,
@@ -25,6 +26,10 @@ const DailyRecordSchema = new mongoose.Schema({
   temperature: { type: Number, default: 0 },
   humidity: { type: Number, default: 0 },
   notes: { type: String, default: '' },
+  recordedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -37,7 +42,41 @@ const FarmSchema = new mongoose.Schema({
   establishedDate: Date,
   phone: { type: String, default: '' },
   email: { type: String, default: '' },
+  companyId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Company'
+  },
+  managerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  employees: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
   isActive: { type: Boolean, default: true },
+  createdAt: { type: Date, default: Date.now }
+});
+
+// Company Schema
+const CompanySchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  ownerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  managerIds: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  farms: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Farm'
+  }],
+  address: String,
+  phone: String,
+  email: String,
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -47,19 +86,49 @@ const UserSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true, lowercase: true },
   password: { type: String, required: true },
   phone: { type: String, default: '' },
-  role: { type: String, enum: ['farmer', 'vet', 'admin'], default: 'farmer' },
+  role: { 
+    type: String, 
+    enum: ['farmer', 'company_admin', 'farm_manager', 'employee', 'admin', 'vet'],
+    default: 'farmer'
+  },
   profilePicture: { type: String, default: '' },
   bio: { type: String, default: '' },
   address: { type: String, default: '' },
+  
+  // For individual farmers
   farms: [FarmSchema],
   dailyRecords: [DailyRecordSchema],
-  notificationPreferences: {
-    emailAlerts: { type: Boolean, default: true },
-    smsAlerts: { type: Boolean, default: false },
-    diseasePredictions: { type: Boolean, default: true }
+  
+  // For company employees
+  companyId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Company'
   },
+  assignedFarmId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Farm'
+  },
+  
+  // Company ownership
+  ownedCompanies: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Company'
+  }],
+  
+  preferences: {
+    language: { type: String, default: 'en' },
+    notifications: {
+      emailAlerts: { type: Boolean, default: true },
+      smsAlerts: { type: Boolean, default: false },
+      pushNotifications: { type: Boolean, default: true }
+    },
+    theme: { type: String, default: 'dark' }
+  },
+  
+  isActive: { type: Boolean, default: true },
   createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
+  updatedAt: { type: Date, default: Date.now },
+  lastLogin: Date
 });
 
 // Hash password before saving
@@ -74,5 +143,10 @@ UserSchema.pre('save', async function(next) {
 UserSchema.methods.comparePassword = async function(candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
+
+// Indexes
+UserSchema.index({ email: 1 });
+UserSchema.index({ role: 1 });
+UserSchema.index({ companyId: 1 });
 
 module.exports = mongoose.model('User', UserSchema);
