@@ -93,7 +93,7 @@
 
 .logo-icon {
   font-size: 48px;
-  animation: bounce 2s ease-in-out infinite;
+ 
 }
 
 @keyframes bounce {
