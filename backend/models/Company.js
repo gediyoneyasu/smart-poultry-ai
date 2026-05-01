@@ -3,34 +3,58 @@ const mongoose = require('mongoose');
 const CompanySchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true
+    required: true,
+    trim: true
   },
   ownerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
-  managerIds: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  }],
+  description: {
+    type: String,
+    default: ''
+  },
+  address: {
+    type: String,
+    default: ''
+  },
+  phone: {
+    type: String,
+    default: ''
+  },
+  email: {
+    type: String,
+    default: ''
+  },
+  logo: {
+    type: String,
+    default: ''
+  },
   farms: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Farm'
   }],
-  address: String,
-  phone: String,
-  email: String,
-  logo: String,
-  subscription: {
-    plan: { type: String, enum: ['free', 'basic', 'premium', 'enterprise'], default: 'free' },
-    expiresAt: Date,
-    maxFarms: { type: Number, default: 1 },
-    maxEmployees: { type: Number, default: 5 }
+  employees: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  isActive: {
+    type: Boolean,
+    default: true
   },
-  isActive: { type: Boolean, default: true },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
+  }
 });
+
+// Indexes
+CompanySchema.index({ ownerId: 1 });
+CompanySchema.index({ name: 1 });
 
 module.exports = mongoose.model('Company', CompanySchema);

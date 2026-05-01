@@ -57,12 +57,10 @@ mongoose.connect(MONGODB_URI)
   process.exit(1);
 });
 
-// ============ ROUTES - ALL UNCOMMENTED ============
+// ============ ROUTES ============
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/farm', require('./routes/farmRoutes'));
-// app.use('/api/admin', require('./routes/admin'));  // Uncomment when ready
-// app.use('/api/contact', require('./routes/contact'));  // Uncomment when ready
-// app.use('/api/company', require('./routes/company'));  // Uncomment when ready
+app.use('/api/company', require('./routes/company'));
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -74,7 +72,7 @@ app.get('/api/test', (req, res) => {
   res.json({ message: 'API is working!' });
 });
 
-// 404 handler for undefined routes
+// 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({ message: `Route ${req.originalUrl} not found` });
 });
@@ -92,16 +90,20 @@ app.listen(PORT, () => {
   console.log(`🔑 Admin Email: ${process.env.ADMIN_EMAIL || 'admin@poultryai.com'}`);
   console.log(`🔑 Admin Password: ${process.env.ADMIN_PASSWORD || 'admin123'}`);
   console.log(`📊 MongoDB: ${MONGODB_URI ? '✓ Connected' : '✗ Missing'}`);
+ 
   console.log(`\n📡 Available routes:`);
   console.log(`   === AUTH ROUTES ===`);
   console.log(`   - POST   /api/auth/register`);
   console.log(`   - POST   /api/auth/login`);
+  console.log(`   - POST   /api/auth/company-register`);
+  console.log(`   - POST   /api/auth/company-login`);
   console.log(`   - GET    /api/auth/profile`);
   console.log(`   - PUT    /api/auth/profile`);
   console.log(`   - POST   /api/auth/upload-profile-pic`);
   console.log(`   - DELETE /api/auth/delete-profile-pic`);
   console.log(`   - GET    /api/auth/stats`);
   console.log(`   - PUT    /api/auth/notifications`);
+  
   console.log(`\n   === FARM ROUTES ===`);
   console.log(`   - GET    /api/farm/farms`);
   console.log(`   - GET    /api/farm/my-farms`);
@@ -111,6 +113,18 @@ app.listen(PORT, () => {
   console.log(`   - GET    /api/farm/records/:farmId`);
   console.log(`   - POST   /api/farm/records`);
   console.log(`   - GET    /api/farm/suggestions/:farmId`);
+  
+  console.log(`\n   === COMPANY ROUTES ===`);
+  console.log(`   - GET    /api/company/my-company`);
+  console.log(`   - PUT    /api/company/my-company`);
+  console.log(`   - GET    /api/company/farms`);
+  console.log(`   - POST   /api/company/farms`);
+  console.log(`   - DELETE /api/company/farms/:farmId`);
+  console.log(`   - GET    /api/company/employees`);
+  console.log(`   - POST   /api/company/employees`);
+  console.log(`   - DELETE /api/company/employees/:employeeId`);
+  console.log(`   - GET    /api/company/stats`);
+  
   console.log(`\n   === PUBLIC ROUTES ===`);
   console.log(`   - GET    /api/health`);
   console.log(`   - GET    /api/test`);

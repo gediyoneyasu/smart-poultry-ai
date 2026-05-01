@@ -33,7 +33,7 @@ const DailyRecordSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-// Farm Schema
+// Farm Schema (Embedded in User)
 const FarmSchema = new mongoose.Schema({
   name: { type: String, required: true },
   location: { type: String, default: '' },
@@ -44,7 +44,17 @@ const FarmSchema = new mongoose.Schema({
   email: { type: String, default: '' },
   companyId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Company'
+    ref: 'Company',
+    default: null
+  },
+  ownerType: {
+    type: String,
+    enum: ['individual', 'company'],
+    default: 'individual'
+  },
+  ownerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
   },
   managerId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -55,40 +65,20 @@ const FarmSchema = new mongoose.Schema({
     ref: 'User'
   }],
   isActive: { type: Boolean, default: true },
-  createdAt: { type: Date, default: Date.now }
-});
-
-// Company Schema
-const CompanySchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  ownerId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  managerIds: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  }],
-  farms: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Farm'
-  }],
-  address: String,
-  phone: String,
-  email: String,
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
 });
 
 // User Schema
 const UserSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true, lowercase: true },
+  username: { type: String, default: '' },  // ✅ ADD THIS LINE
   password: { type: String, required: true },
   phone: { type: String, default: '' },
   role: { 
     type: String, 
-    enum: ['farmer', 'company_admin', 'farm_manager', 'employee', 'admin', 'vet'],
+    enum: ['farmer', 'company_admin', 'farm_manager', 'farm_worker', 'admin', 'vet'],
     default: 'farmer'
   },
   profilePicture: { type: String, default: '' },
@@ -96,21 +86,30 @@ const UserSchema = new mongoose.Schema({
   address: { type: String, default: '' },
   farmName: { type: String, default: '' },
   
-  // For individual farmers
+  // For individual farmers (embedded farms)
   farms: [FarmSchema],
   dailyRecords: [DailyRecordSchema],
   
   // For company employees
   companyId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Company'
+    ref: 'Company',
+    default: null
   },
   assignedFarmId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Farm'
+    ref: 'Farm',
+    default: null
   },
   
-  // Company ownership
+  // For company owners
+  ownedCompanyId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Company',
+    default: null
+  },
+  
+  // Legacy support
   ownedCompanies: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Company'
@@ -132,7 +131,7 @@ const UserSchema = new mongoose.Schema({
   lastLogin: Date
 });
 
-// ✅ ADDED: Virtual for notificationPreferences (for Profile component compatibility)
+// Virtual for notificationPreferences
 UserSchema.virtual('notificationPreferences').get(function() {
   return {
     emailAlerts: this.preferences?.notifications?.emailAlerts ?? true,
@@ -141,14 +140,14 @@ UserSchema.virtual('notificationPreferences').get(function() {
   };
 });
 
-// ✅ ADDED: toJSON transform to remove sensitive data
+// toJSON transform to remove sensitive data
 UserSchema.set('toJSON', {
   transform: (doc, ret) => {
     delete ret.password;
     delete ret.__v;
     return ret;
   },
-  virtuals: true  // Include virtuals like notificationPreferences
+  virtuals: true
 });
 
 // Hash password before saving
@@ -166,8 +165,10 @@ UserSchema.methods.comparePassword = async function(candidatePassword) {
 
 // Indexes
 UserSchema.index({ email: 1 });
+UserSchema.index({ username: 1 });  // ✅ ADD THIS INDEX
 UserSchema.index({ role: 1 });
 UserSchema.index({ companyId: 1 });
 UserSchema.index({ isActive: 1 });
+UserSchema.index({ ownedCompanyId: 1 });
 
 module.exports = mongoose.model('User', UserSchema);
