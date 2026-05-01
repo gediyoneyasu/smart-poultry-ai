@@ -14,6 +14,7 @@ import Profile from './pages/Profile';
 import Auth from './pages/Auth';
 import HouseDetails from './pages/HouseDetails';
 import Admin from './pages/Admin';
+import CompanyAuth from './pages/CompanyAuth';
 
 const loadFontAwesome = () => {
   const link = document.createElement('link');
@@ -35,6 +36,8 @@ function App() {
           <Route path="/auth" element={<Auth />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/diseases" element={<Diseases />} />
+          <Route path="/company-auth" element={<CompanyAuth />} />
+          
           
           {/* Protected Routes */}
           <Route path="/dashboard" element={<ProtectedRoute><SmartDashboard /></ProtectedRoute>} />

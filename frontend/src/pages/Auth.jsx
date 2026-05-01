@@ -18,9 +18,9 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { login, register } = useAuth();
-
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  
+  // ✅ FIXED: Single destructuring instead of two separate calls
+  const { login, register, isAuthenticated, loading: authLoading } = useAuth();
 
   useEffect(() => {
     const savedLang = localStorage.getItem('language');
@@ -164,10 +164,16 @@ const Auth = () => {
           </div>
 
           <div className="auth-tabs">
-            <button className={`auth-tab ${isLogin ? 'active' : ''}`} onClick={() => setIsLogin(true)}>
+            <button 
+              className={`auth-tab ${isLogin ? 'active' : ''}`} 
+              onClick={() => setIsLogin(true)}
+            >
               {t.login}
             </button>
-            <button className={`auth-tab ${!isLogin ? 'active' : ''}`} onClick={() => setIsLogin(false)}>
+            <button 
+              className={`auth-tab ${!isLogin ? 'active' : ''}`} 
+              onClick={() => setIsLogin(false)}
+            >
               {t.register}
             </button>
           </div>
@@ -177,12 +183,24 @@ const Auth = () => {
               <>
                 <div className="form-group">
                   <label>{t.name} *</label>
-                  <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="Enter your full name" />
+                  <input 
+                    type="text" 
+                    name="name" 
+                    value={formData.name} 
+                    onChange={handleChange} 
+                    placeholder="Enter your full name" 
+                  />
                   <i className="fas fa-user"></i>
                 </div>
                 <div className="form-group">
                   <label>{t.farmName}</label>
-                  <input type="text" name="farmName" value={formData.farmName} onChange={handleChange} placeholder="Enter your farm name" />
+                  <input 
+                    type="text" 
+                    name="farmName" 
+                    value={formData.farmName} 
+                    onChange={handleChange} 
+                    placeholder="Enter your farm name" 
+                  />
                   <i className="fas fa-tractor"></i>
                 </div>
                 <div className="form-group">
@@ -199,15 +217,31 @@ const Auth = () => {
 
             <div className="form-group">
               <label>{t.email} *</label>
-              <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="your@email.com" />
+              <input 
+                type="email" 
+                name="email" 
+                value={formData.email} 
+                onChange={handleChange} 
+                placeholder="your@email.com" 
+              />
               <i className="fas fa-envelope"></i>
             </div>
 
             <div className="form-group">
               <label>{t.password} *</label>
-              <input type={showPassword ? "text" : "password"} name="password" value={formData.password} onChange={handleChange} placeholder="••••••••" />
+              <input 
+                type={showPassword ? "text" : "password"} 
+                name="password" 
+                value={formData.password} 
+                onChange={handleChange} 
+                placeholder="••••••••" 
+              />
               <i className="fas fa-lock"></i>
-              <button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)}>
+              <button 
+                type="button" 
+                className="password-toggle" 
+                onClick={() => setShowPassword(!showPassword)}
+              >
                 <i className={showPassword ? "fas fa-eye-slash" : "fas fa-eye"}></i>
               </button>
             </div>
@@ -215,13 +249,23 @@ const Auth = () => {
             {!isLogin && (
               <div className="form-group">
                 <label>{t.confirmPassword} *</label>
-                <input type={showPassword ? "text" : "password"} name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} placeholder="••••••••" />
+                <input 
+                  type={showPassword ? "text" : "password"} 
+                  name="confirmPassword" 
+                  value={formData.confirmPassword} 
+                  onChange={handleChange} 
+                  placeholder="••••••••" 
+                />
                 <i className="fas fa-check-circle"></i>
               </div>
             )}
 
             <button type="submit" className="auth-submit" disabled={loading}>
-              {loading ? <><i className="fas fa-spinner fa-spin"></i> {isLogin ? t.loggingIn : t.registering}</> : <><i className="fas fa-paper-plane"></i> {isLogin ? t.login : t.register}</>}
+              {loading ? (
+                <><i className="fas fa-spinner fa-spin"></i> {isLogin ? t.loggingIn : t.registering}</>
+              ) : (
+                <><i className="fas fa-paper-plane"></i> {isLogin ? t.login : t.register}</>
+              )}
             </button>
 
             {isLogin && (
@@ -233,9 +277,15 @@ const Auth = () => {
 
           <div className="auth-footer">
             {isLogin ? (
-              <p>{t.noAccount} <button onClick={() => setIsLogin(false)}>{t.registerNow}</button></p>
+              <p>
+                {t.noAccount} 
+                <button onClick={() => setIsLogin(false)}>{t.registerNow}</button>
+              </p>
             ) : (
-              <p>{t.haveAccount} <button onClick={() => setIsLogin(true)}>{t.loginNow}</button></p>
+              <p>
+                {t.haveAccount} 
+                <button onClick={() => setIsLogin(true)}>{t.loginNow}</button>
+              </p>
             )}
           </div>
         </div>
