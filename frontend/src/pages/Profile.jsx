@@ -1,12 +1,9 @@
-//import API_URL from "../config/api";
-// import API_URL from "../config/api";
-const API_URL = 'http://localhost:5001/api';
-console.log('Using API_URL:', API_URL);
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import API_URL from "../config/api";
 import './Profile.css';
 
 const Profile = () => {
@@ -48,7 +45,6 @@ const Profile = () => {
       setStats(response.data);
     } catch (error) {
       console.error('Stats error:', error);
-      // Don't show error toast for stats - it's non-critical
     }
   };
 
@@ -90,7 +86,6 @@ const Profile = () => {
       setProfile(response.data);
       setEditForm(response.data);
       
-      // Load notification preferences if they exist
       if (response.data.notificationPreferences) {
         setNotifications(response.data.notificationPreferences);
       }
