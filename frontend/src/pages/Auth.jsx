@@ -290,6 +290,7 @@ const Auth = () => {
           </div>
         </div>
 
+
         <div className="auth-bg">
           <div className="bg-content">
             <h2>🐔 AI-Powered Poultry Health Management</h2>
@@ -302,6 +303,13 @@ const Auth = () => {
             </div>
           </div>
         </div>
+
+<div className="company-portal-link">
+  <button onClick={() => navigate('/company-auth')} className="company-link-btn">
+    🏢 Company Portal →
+  </button>
+</div>
+
       </div>
     </div>
   );

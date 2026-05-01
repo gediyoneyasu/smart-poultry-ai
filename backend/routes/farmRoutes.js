@@ -21,17 +21,14 @@ router.get('/my-farms', auth, async (req, res) => {
 });
 
 // ✅ ADDED: Alias for /farms (matches frontend expectation)
+// TO THIS (returns array directly):
 router.get('/farms', auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    res.json({ 
-      success: true, 
-      farms: user.farms || [], 
-      count: user.farms?.length || 0 
-    });
+    res.json(user.farms || []);  // ← CHANGE THIS LINE
   } catch (error) {
     console.error('Error getting farms:', error);
     res.status(500).json({ message: error.message });

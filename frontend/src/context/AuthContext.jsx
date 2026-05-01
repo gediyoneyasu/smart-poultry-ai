@@ -121,7 +121,7 @@ export const AuthProvider = ({ children }) => {
   return (
     <AuthContext.Provider value={{
       user,
-      token,
+      token,        // ✅ ADDED: This was missing
       loading,
       isAuthenticated,
       login,

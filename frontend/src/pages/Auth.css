@@ -296,3 +296,32 @@
     align-items: flex-start;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+.company-portal-link {
+  text-align: center;
+  margin-top: 15px;
+}
+
+.company-link-btn {
+  background: none;
+  border: none;
+  color: #10b981;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.company-link-btn:hover {
+  text-decoration: underline;
+}
