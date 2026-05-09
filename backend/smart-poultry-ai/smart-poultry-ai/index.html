@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Poultry AI - Farm Management</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🐔 Smart Poultry AI</h1>
+            <p>Intelligent Farm Management System</p>
+        </div>
+
+        <div class="content">
+            <h2 class="section-title">Select Mode</h2>
+            <p class="section-subtitle">Please select how you want to manage your farms</p>
+
+            <div class="modes-container">
+                <!-- Individual Farmer Mode -->
+                <div class="mode-card">
+                    <div class="mode-icon">👨‍🌾</div>
+                    <h3>Individual Farmer (AI)</h3>
+                    <p>Manage your personal farm, track records, and get AI insights</p>
+                    <button class="btn btn-primary" id="individualModeBtn">
+                        Select Individual Mode
+                    </button>
+                    <div class="user-info">
+                        Using: gediyon eyasu
+                    </div>
+                </div>
+
+                <!-- Company Manager Mode -->
+                <div class="mode-card">
+                    <div class="mode-icon">🏢</div>
+                    <h3>Company Manager (AI & CEE+)</h3>
+                    <p>Manage multiple farms, employees, and company-wide analytics</p>
+                    <button class="btn btn-secondary" id="companyLoginBtn">
+                        Login to Company Portal
+                    </button>
+                    <div class="info-text">Separate company account required</div>
+                </div>
+
+                <!-- Employee Mode -->
+                <div class="mode-card">
+                    <div class="mode-icon">👔</div>
+                    <h3>Employee Login</h3>
+                    <p>Login with company credentials provided by your manager</p>
+                    <button class="btn btn-secondary" id="employeeLoginBtn">
+                        Employee Login
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Company Login Modal -->
+    <div id="companyLoginModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🏢 Company Portal Login</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="companyLoginForm">
+                    <div class="form-group">
+                        <label for="companyEmail">Company Email</label>
+                        <input type="email" id="companyEmail" name="companyEmail" required placeholder="manager@company.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="companyPassword">Password</label>
+                        <input type="password" id="companyPassword" name="companyPassword" required placeholder="Enter your password">
+                    </div>
+                    <div class="form-group">
+                        <label for="companyCode">Company Code</label>
+                        <input type="text" id="companyCode" name="companyCode" placeholder="Optional: Company access code">
+                    </div>
+                    <button type="submit" class="btn btn-login">Login to Dashboard</button>
+                </form>
+                <div class="modal-footer">
+                    <a href="#">Forgot password?</a>
+                    <a href="#">Need help?</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Employee Login Modal -->
+    <div id="employeeLoginModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>👔 Employee Login</h2>
+                <span class="close-employee">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="employeeLoginForm">
+                    <div class="form-group">
+                        <label for="employeeId">Employee ID</label>
+                        <input type="text" id="employeeId" name="employeeId" required placeholder="Enter your employee ID">
+                    </div>
+                    <div class="form-group">
+                        <label for="employeePassword">Password</label>
+                        <input type="password" id="employeePassword" name="employeePassword" required placeholder="Enter your password">
+                    </div>
+                    <div class="form-group">
+                        <label for="companyName">Company Name</label>
+                        <input type="text" id="companyName" name="companyName" required placeholder="Company name">
+                    </div>
+                    <button type="submit" class="btn btn-login">Login to Employee Portal</button>
+                </form>
+                <div class="modal-footer">
+                    <a href="#">Contact your manager</a>
+                    <a href="#">Reset password</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

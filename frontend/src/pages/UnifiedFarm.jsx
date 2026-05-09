@@ -818,7 +818,7 @@ const UnifiedFarm = () => {
               className="mode-card" 
               onClick={() => {
                 console.log('Redirecting to Company Portal...');
-                window.location.href = '/company-auth';
+                navigate('/company-auth');
               }}
               style={{ cursor: 'pointer' }}
             >

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
@@ -9,10 +9,16 @@ const API_URL = 'http://localhost:5001/api';
 const CompanyAuth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
-  const [registerForm, setRegisterForm] = useState({
+  // Login form state
+  const [loginData, setLoginData] = useState({
+    username: '',
+    password: ''
+  });
+
+  // Register form state
+  const [registerData, setRegisterData] = useState({
     name: '',
     email: '',
     phone: '',
@@ -22,126 +28,90 @@ const CompanyAuth = () => {
     confirmPassword: ''
   });
 
-  const [loginForm, setLoginForm] = useState({
-    username: '',
-    password: ''
-  });
-
-  // Check if already logged in as company admin
-  useEffect(() => {
-    const token = localStorage.getItem('poultryToken');
-    const user = JSON.parse(localStorage.getItem('poultryUser') || '{}');
-    if (token && user.role === 'company_admin') {
-      navigate('/farm');
-    }
-  }, [navigate]);
-
-  const handleRegisterChange = (e) => {
-    setRegisterForm({ ...registerForm, [e.target.name]: e.target.value });
-  };
-
-  const handleLoginChange = (e) => {
-    setLoginForm({ ...loginForm, [e.target.name]: e.target.value });
-  };
-
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-
-    // Validation
-    if (!registerForm.name || !registerForm.email || !registerForm.companyName || 
-        !registerForm.username || !registerForm.password) {
-      toast.error('Please fill all required fields');
-      setLoading(false);
-      return;
-    }
-
-    if (registerForm.password !== registerForm.confirmPassword) {
-      toast.error('Passwords do not match');
-      setLoading(false);
-      return;
-    }
-
-    try {
-      console.log('Registering company:', {
-        name: registerForm.name,
-        email: registerForm.email,
-        companyName: registerForm.companyName,
-        username: registerForm.username
-      });
-
-      const response = await axios.post(`${API_URL}/auth/company-register`, {
-        name: registerForm.name,
-        email: registerForm.email,
-        phone: registerForm.phone,
-        companyName: registerForm.companyName,
-        username: registerForm.username,
-        password: registerForm.password,
-        role: 'company_admin'
-      });
-
-      console.log('Registration response:', response.data);
-
-      if (response.data.success) {
-        // Store token and user data
-        localStorage.setItem('poultryToken', response.data.token);
-        localStorage.setItem('poultryUser', JSON.stringify(response.data.user));
-        
-        toast.success('Company account created successfully!');
-        
-        // Small delay to ensure storage is complete
-        setTimeout(() => {
-          navigate('/farm');
-        }, 500);
-      } else {
-        toast.error(response.data.message || 'Registration failed');
-      }
-    } catch (error) {
-      console.error('Registration error:', error);
-      console.error('Error response:', error.response?.data);
-      toast.error(error.response?.data?.message || 'Registration failed. Please try again.');
-    }
-    setLoading(false);
-  };
-
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-
-    if (!loginForm.username || !loginForm.password) {
-      toast.error('Please enter username and password');
-      setLoading(false);
-      return;
-    }
-
+    
+    console.log('Login attempt:', loginData.username);
+    
     try {
-      console.log('Logging in with username:', loginForm.username);
-
       const response = await axios.post(`${API_URL}/auth/company-login`, {
-        username: loginForm.username,
-        password: loginForm.password
+        username: loginData.username,
+        password: loginData.password
       });
-
+      
       console.log('Login response:', response.data);
-
+      
       if (response.data.success) {
-        // Store token and user data
         localStorage.setItem('poultryToken', response.data.token);
         localStorage.setItem('poultryUser', JSON.stringify(response.data.user));
         
-        toast.success(`Welcome back, ${response.data.user.name}!`);
+        toast.success('Login successful! Redirecting to company dashboard...');
         
-        // Small delay to ensure storage is complete
         setTimeout(() => {
-          navigate('/farm');
-        }, 500);
+          navigate('/company-dashboard');
+        }, 1000);
       } else {
         toast.error(response.data.message || 'Login failed');
       }
     } catch (error) {
       console.error('Login error:', error);
-      console.error('Error response:', error.response?.data);
-      toast.error(error.response?.data?.message || 'Login failed. Please check your credentials.');
+      toast.error(error.response?.data?.message || 'Invalid username or password');
+    }
+    setLoading(false);
+  };
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    // Validation
+    if (registerData.password !== registerData.confirmPassword) {
+      toast.error('Passwords do not match');
+      setLoading(false);
+      return;
+    }
+    
+    if (registerData.password.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      setLoading(false);
+      return;
+    }
+    
+    console.log('Register attempt:', {
+      name: registerData.name,
+      email: registerData.email,
+      companyName: registerData.companyName,
+      username: registerData.username
+    });
+    
+    try {
+      const response = await axios.post(`${API_URL}/auth/company-register`, {
+        name: registerData.name,
+        email: registerData.email,
+        phone: registerData.phone,
+        companyName: registerData.companyName,
+        username: registerData.username,
+        password: registerData.password
+      });
+      
+      console.log('Register response:', response.data);
+      
+      if (response.data.success) {
+        localStorage.setItem('poultryToken', response.data.token);
+        localStorage.setItem('poultryUser', JSON.stringify(response.data.user));
+        
+        toast.success('Company registered successfully! Redirecting to dashboard...');
+        
+        setTimeout(() => {
+          navigate('/company-dashboard');
+        }, 1000);
+      } else {
+        toast.error(response.data.message || 'Registration failed');
+      }
+    } catch (error) {
+      console.error('Register error:', error);
+      toast.error(error.response?.data?.message || 'Registration failed. Username or email may already exist.');
     }
     setLoading(false);
   };
@@ -156,9 +126,9 @@ const CompanyAuth = () => {
               <span className="logo-text">Company Portal</span>
             </div>
             <h1>{isLogin ? 'Company Login' : 'Register Company'}</h1>
-            <p>{isLogin ? 'Login with your username' : 'Create your company account'}</p>
+            <p>{isLogin ? 'Login with your credentials' : 'Create your company account'}</p>
           </div>
-
+          
           <div className="company-auth-tabs">
             <button 
               className={`company-auth-tab ${isLogin ? 'active' : ''}`} 
@@ -173,130 +143,133 @@ const CompanyAuth = () => {
               Register
             </button>
           </div>
-
-          {isLogin && (
-            <form className="company-auth-form" onSubmit={handleLogin}>
+          
+          {isLogin ? (
+            <form onSubmit={handleLogin}>
+              <div className="form-group">
+                <label>Username or Email *</label>
+                <input 
+                  type="text" 
+                  value={loginData.username} 
+                  onChange={(e) => setLoginData({...loginData, username: e.target.value})} 
+                  placeholder="Enter your username or email"
+                  required
+                  autoFocus
+                />
+              </div>
+              
+              <div className="form-group">
+                <label>Password *</label>
+                <input 
+                  type="password" 
+                  value={loginData.password} 
+                  onChange={(e) => setLoginData({...loginData, password: e.target.value})} 
+                  placeholder="Enter your password"
+                  required
+                />
+              </div>
+              
+              <button type="submit" className="company-auth-submit" disabled={loading}>
+                {loading ? 'Logging in...' : 'Login to Company Portal'}
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handleRegister}>
+              <div className="form-group">
+                <label>Full Name *</label>
+                <input 
+                  type="text" 
+                  value={registerData.name} 
+                  onChange={(e) => setRegisterData({...registerData, name: e.target.value})} 
+                  placeholder="Your full name"
+                  required
+                />
+              </div>
+              
+              <div className="form-group">
+                <label>Email *</label>
+                <input 
+                  type="email" 
+                  value={registerData.email} 
+                  onChange={(e) => setRegisterData({...registerData, email: e.target.value})} 
+                  placeholder="your@email.com"
+                  required
+                />
+              </div>
+              
+              <div className="form-group">
+                <label>Phone Number</label>
+                <input 
+                  type="tel" 
+                  value={registerData.phone} 
+                  onChange={(e) => setRegisterData({...registerData, phone: e.target.value})} 
+                  placeholder="Phone number"
+                />
+              </div>
+              
+              <div className="form-group">
+                <label>Company Name *</label>
+                <input 
+                  type="text" 
+                  value={registerData.companyName} 
+                  onChange={(e) => setRegisterData({...registerData, companyName: e.target.value})} 
+                  placeholder="Your company name"
+                  required
+                />
+              </div>
+              
               <div className="form-group">
                 <label>Username *</label>
                 <input 
                   type="text" 
-                  name="username" 
-                  value={loginForm.username} 
-                  onChange={handleLoginChange} 
-                  placeholder="Enter your username" 
-                  autoComplete="username"
+                  value={registerData.username} 
+                  onChange={(e) => setRegisterData({...registerData, username: e.target.value})} 
+                  placeholder="Choose a username"
+                  required
                 />
-                <i className="fas fa-user-circle"></i>
               </div>
-
+              
               <div className="form-group">
                 <label>Password *</label>
                 <input 
-                  type={showPassword ? "text" : "password"} 
-                  name="password" 
-                  value={loginForm.password} 
-                  onChange={handleLoginChange} 
-                  placeholder="••••••••" 
-                  autoComplete="current-password"
+                  type="password" 
+                  value={registerData.password} 
+                  onChange={(e) => setRegisterData({...registerData, password: e.target.value})} 
+                  placeholder="At least 6 characters"
+                  required
                 />
-                <i className="fas fa-lock"></i>
-                <button 
-                  type="button" 
-                  className="password-toggle" 
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  <i className={showPassword ? "fas fa-eye-slash" : "fas fa-eye"}></i>
-                </button>
               </div>
-
-              <button type="submit" className="company-auth-submit" disabled={loading}>
-                {loading ? <><i className="fas fa-spinner fa-spin"></i> Logging in...</> : <><i className="fas fa-sign-in-alt"></i> Login</>}
-              </button>
-            </form>
-          )}
-
-          {!isLogin && (
-            <form className="company-auth-form" onSubmit={handleRegister}>
-              <div className="form-row">
-                <div className="form-group half">
-                  <label>Full Name *</label>
-                  <input type="text" name="name" value={registerForm.name} onChange={handleRegisterChange} placeholder="Your full name" />
-                  <i className="fas fa-user"></i>
-                </div>
-                <div className="form-group half">
-                  <label>Email *</label>
-                  <input type="email" name="email" value={registerForm.email} onChange={handleRegisterChange} placeholder="your@email.com" />
-                  <i className="fas fa-envelope"></i>
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group half">
-                  <label>Phone Number</label>
-                  <input type="tel" name="phone" value={registerForm.phone} onChange={handleRegisterChange} placeholder="Phone number" />
-                  <i className="fas fa-phone"></i>
-                </div>
-                <div className="form-group half">
-                  <label>Company Name *</label>
-                  <input type="text" name="companyName" value={registerForm.companyName} onChange={handleRegisterChange} placeholder="Your company name" />
-                  <i className="fas fa-building"></i>
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group half">
-                  <label>Username *</label>
-                  <input type="text" name="username" value={registerForm.username} onChange={handleRegisterChange} placeholder="Choose a username" />
-                  <i className="fas fa-user-circle"></i>
-                </div>
-                <div className="form-group half">
-                  <label>Password *</label>
-                  <input type={showPassword ? "text" : "password"} name="password" value={registerForm.password} onChange={handleRegisterChange} placeholder="••••••••" />
-                  <i className="fas fa-lock"></i>
-                </div>
-              </div>
-
+              
               <div className="form-group">
                 <label>Confirm Password *</label>
-                <input type={showPassword ? "text" : "password"} name="confirmPassword" value={registerForm.confirmPassword} onChange={handleRegisterChange} placeholder="••••••••" />
-                <i className="fas fa-check-circle"></i>
+                <input 
+                  type="password" 
+                  value={registerData.confirmPassword} 
+                  onChange={(e) => setRegisterData({...registerData, confirmPassword: e.target.value})} 
+                  placeholder="Confirm your password"
+                  required
+                />
               </div>
-
+              
               <button type="submit" className="company-auth-submit" disabled={loading}>
-                {loading ? <><i className="fas fa-spinner fa-spin"></i> Creating account...</> : <><i className="fas fa-building"></i> Register Company</>}
+                {loading ? 'Creating account...' : 'Register Company'}
               </button>
             </form>
           )}
-
+          
           <div className="company-auth-footer">
-            {isLogin ? (
-              <p>
-                Don't have a company account? <button onClick={() => setIsLogin(false)}>Register Now</button>
-              </p>
-            ) : (
-              <p>
-                Already have a company account? <button onClick={() => setIsLogin(true)}>Login Now</button>
-              </p>
-            )}
-          </div>
-
-          <div className="company-auth-back">
             <button onClick={() => navigate('/')} className="back-btn">
               ← Back to Home
             </button>
           </div>
-        </div>
-
-        <div className="company-auth-bg">
-          <div className="bg-content">
-            <h2>🏢 Company Management Portal</h2>
-            <p>Manage multiple farms • Add employees • Track analytics</p>
-            <div className="bg-features">
-              <span><i className="fas fa-chart-line"></i> Company Analytics</span>
-              <span><i className="fas fa-users"></i> Employee Management</span>
-              <span><i className="fas fa-tractor"></i> Multi-Farm Management</span>
-              <span><i className="fas fa-file-alt"></i> Consolidated Reports</span>
-            </div>
+          
+          <div className="demo-credentials">
+            <p><strong>Demo Credentials:</strong></p>
+            <p>Username: <strong>gediyon15</strong></p>
+            <p>Password: <strong>123456</strong></p>
+            <p style={{fontSize: '11px', color: '#666', marginTop: '10px'}}>
+              New company? Click "Register" tab to create your company account
+            </p>
           </div>
         </div>
       </div>
